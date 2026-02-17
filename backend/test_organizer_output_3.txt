@@ -1,0 +1,599 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.8.8, pytest-6.2.3, py-1.10.0, pluggy-0.13.1
+rootdir: /Users/carlosbautista/Desktop/Escritorio - MacBook Pro de Carlos/TusTados/backend
+plugins: anyio-3.4.0
+collected 6 items
+
+tests/api/v1/test_organizer_crud.py .FFFFF                               [100%]
+
+=================================== FAILURES ===================================
+___________________________ test_create_event_valid ____________________________
+
+self = <sqlalchemy.engine.base.Connection object at 0x7fa4488fe460>
+dialect = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7fa4285ca3d0>
+context = <sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2 object at 0x7fa428667c70>
+statement = <sqlalchemy.dialects.postgresql.base.PGCompiler object at 0x7fa459801160>
+parameters = [{'capacity': 20, 'description': 'This is a valid event', 'id': UUID('c16f6d88-8989-4348-9c97-7d89ef58f741'), 'organizer_id': UUID('6bf83366-08fe-491d-ad42-dd66de57bdd2'), ...}]
+
+    def _exec_single_context(
+        self,
+        dialect: Dialect,
+        context: ExecutionContext,
+        statement: Union[str, Compiled],
+        parameters: Optional[_AnyMultiExecuteParams],
+    ) -> CursorResult[Any]:
+        """continue the _execute_context() method for a single DBAPI
+        cursor.execute() or cursor.executemany() call.
+    
+        """
+        if dialect.bind_typing is BindTyping.SETINPUTSIZES:
+            generic_setinputsizes = context._prepare_set_input_sizes()
+    
+            if generic_setinputsizes:
+                try:
+                    dialect.do_set_input_sizes(
+                        context.cursor, generic_setinputsizes, context
+                    )
+                except BaseException as e:
+                    self._handle_dbapi_exception(
+                        e, str(statement), parameters, None, context
+                    )
+    
+        cursor, str_statement, parameters = (
+            context.cursor,
+            context.statement,
+            context.parameters,
+        )
+    
+        effective_parameters: Optional[_AnyExecuteParams]
+    
+        if not context.executemany:
+            effective_parameters = parameters[0]
+        else:
+            effective_parameters = parameters
+    
+        if self._has_events or self.engine._has_events:
+            for fn in self.dispatch.before_cursor_execute:
+                str_statement, effective_parameters = fn(
+                    self,
+                    cursor,
+                    str_statement,
+                    effective_parameters,
+                    context,
+                    context.executemany,
+                )
+    
+        if self._echo:
+            self._log_info(str_statement)
+    
+            stats = context._get_cache_stats()
+    
+            if not self.engine.hide_parameters:
+                self._log_info(
+                    "[%s] %r",
+                    stats,
+                    sql_util._repr_params(
+                        effective_parameters,
+                        batches=10,
+                        ismulti=context.executemany,
+                    ),
+                )
+            else:
+                self._log_info(
+                    "[%s] [SQL parameters hidden due to hide_parameters=True]",
+                    stats,
+                )
+    
+        evt_handled: bool = False
+        try:
+            if context.execute_style is ExecuteStyle.EXECUTEMANY:
+                effective_parameters = cast(
+                    "_CoreMultiExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_executemany:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_executemany(
+                        cursor,
+                        str_statement,
+                        effective_parameters,
+                        context,
+                    )
+            elif not effective_parameters and context.no_parameters:
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute_no_params:
+                        if fn(cursor, str_statement, context):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_execute_no_params(
+                        cursor, str_statement, context
+                    )
+            else:
+                effective_parameters = cast(
+                    "_CoreSingleExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+>                   self.dialect.do_execute(
+                        cursor, str_statement, effective_parameters, context
+                    )
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1967: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7fa4285ca3d0>
+cursor = <cursor object at 0x7fa4285fad60; closed: -1>
+statement = 'INSERT INTO events (id, organizer_id, title, description, status, space_id, time_range, capacity) VALUES (%(id)s::UUI...(status)s, %(space_id)s::UUID, %(time_range)s::TSTZRANGE, %(capacity)s) RETURNING events.created_at, events.updated_at'
+parameters = {'capacity': 20, 'description': 'This is a valid event', 'id': UUID('c16f6d88-8989-4348-9c97-7d89ef58f741'), 'organizer_id': UUID('6bf83366-08fe-491d-ad42-dd66de57bdd2'), ...}
+context = <sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2 object at 0x7fa428667c70>
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+>       cursor.execute(statement, parameters)
+E       psycopg2.errors.CannotCoerce: cannot cast type text[] to tstzrange
+E       LINE 1: ...-18T21:55:44.123177','2026-02-18T23:55:44.123177']::TSTZRANG...
+E                                                                    ^
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:952: CannotCoerce
+
+The above exception was the direct cause of the following exception:
+
+client = <starlette.testclient.TestClient object at 0x7fa45998c670>
+test_space = <app.models.venues.Space object at 0x7fa4383d94c0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTc4NDQsInN1YiI6IjZiZjgzMzY2LTA4ZmUtNDk...kZTU3YmRkMiIsImp0aSI6IjZjMzM1YThkLTNiNGYtNDAzZC05ZDUwLTVlOTA1NjU5MjFjOCJ9._xzpjl8Ot_F_YKVt_63gOn8E-CdobuUdO85yzHGQwTY'}
+
+    def test_create_event_valid(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # Schedule for 2 days from now
+        start_time = datetime.now() + timedelta(days=2)
+        end_time = start_time + timedelta(hours=2)
+    
+        data = {
+            "title": "Valid Event",
+            "description": "This is a valid event",
+            "status": "published",
+            "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()],
+            "capacity": 20
+        }
+    
+>       r = client.post(f"{settings.API_V1_STR}/events/", headers=organizer_token_headers, json=data)
+
+tests/api/v1/test_organizer_crud.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:226: in app
+    raw_response = await run_endpoint_function(
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:161: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/concurrency.py:39: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/to_thread.py:28: in run_sync
+    return await get_asynclib().run_sync_in_worker_thread(func, *args, cancellable=cancellable,
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:818: in run_sync_in_worker_thread
+    return await future
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:754: in run
+    result = context.run(func, *args)
+app/api/v1/endpoints/events.py:132: in create_event
+    db.commit()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2030: in commit
+    trans.commit(_to_root=True)
+<string>:2: in commit
+    ???
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py:137: in _go
+    ret_value = fn(self, *arg, **kw)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:1311: in commit
+    self._prepare_impl()
+<string>:2: in _prepare_impl
+    ???
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py:137: in _go
+    ret_value = fn(self, *arg, **kw)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:1286: in _prepare_impl
+    self.session.flush()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:4331: in flush
+    self._flush(objects)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:4467: in _flush
+    transaction.rollback(_capture_exception=True)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:4427: in _flush
+    flush_context.execute()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/unitofwork.py:466: in execute
+    rec.execute(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/unitofwork.py:642: in execute
+    util.preloaded.orm_persistence.save_obj(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/persistence.py:93: in save_obj
+    _emit_insert_statements(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/persistence.py:1233: in _emit_insert_statements
+    result = connection.execute(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1419: in execute
+    return meth(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/sql/elements.py:527: in _execute_on_connection
+    return connection._execute_clauseelement(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1641: in _execute_clauseelement
+    ret = self._execute_context(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1846: in _execute_context
+    return self._exec_single_context(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1986: in _exec_single_context
+    self._handle_dbapi_exception(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:2363: in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1967: in _exec_single_context
+    self.dialect.do_execute(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7fa4285ca3d0>
+cursor = <cursor object at 0x7fa4285fad60; closed: -1>
+statement = 'INSERT INTO events (id, organizer_id, title, description, status, space_id, time_range, capacity) VALUES (%(id)s::UUI...(status)s, %(space_id)s::UUID, %(time_range)s::TSTZRANGE, %(capacity)s) RETURNING events.created_at, events.updated_at'
+parameters = {'capacity': 20, 'description': 'This is a valid event', 'id': UUID('c16f6d88-8989-4348-9c97-7d89ef58f741'), 'organizer_id': UUID('6bf83366-08fe-491d-ad42-dd66de57bdd2'), ...}
+context = <sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2 object at 0x7fa428667c70>
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+>       cursor.execute(statement, parameters)
+E       sqlalchemy.exc.ProgrammingError: (psycopg2.errors.CannotCoerce) cannot cast type text[] to tstzrange
+E       LINE 1: ...-18T21:55:44.123177','2026-02-18T23:55:44.123177']::TSTZRANG...
+E                                                                    ^
+E       
+E       [SQL: INSERT INTO events (id, organizer_id, title, description, status, space_id, time_range, capacity) VALUES (%(id)s::UUID, %(organizer_id)s::UUID, %(title)s, %(description)s, %(status)s, %(space_id)s::UUID, %(time_range)s::TSTZRANGE, %(capacity)s) RETURNING events.created_at, events.updated_at]
+E       [parameters: {'id': UUID('c16f6d88-8989-4348-9c97-7d89ef58f741'), 'organizer_id': UUID('6bf83366-08fe-491d-ad42-dd66de57bdd2'), 'title': 'Valid Event', 'description': 'This is a valid event', 'status': 'published', 'space_id': UUID('660586c6-4374-436c-9ef4-064986bfa7bc'), 'time_range': ['2026-02-18T21:55:44.123177', '2026-02-18T23:55:44.123177'], 'capacity': 20}]
+E       (Background on this error at: https://sqlalche.me/e/20/f405)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:952: ProgrammingError
+_________________________ test_create_event_past_fail __________________________
+
+client = <starlette.testclient.TestClient object at 0x7fa45998c670>
+test_space = <app.models.venues.Space object at 0x7fa4383d94c0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTc4NDQsInN1YiI6IjZiZjgzMzY2LTA4ZmUtNDk...kZTU3YmRkMiIsImp0aSI6IjZjMzM1YThkLTNiNGYtNDAzZC05ZDUwLTVlOTA1NjU5MjFjOCJ9._xzpjl8Ot_F_YKVt_63gOn8E-CdobuUdO85yzHGQwTY'}
+
+    def test_create_event_past_fail(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # Schedule for yesterday
+        start_time = datetime.now() - timedelta(days=1)
+        end_time = start_time + timedelta(hours=2)
+    
+        data = {
+            "title": "Past Event",
+>           "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()]
+        }
+
+tests/api/v1/test_organizer_crud.py:59: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/attributes.py:569: in __get__
+    return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/attributes.py:1096: in get
+    value = self._fire_loader_callables(state, key, passive)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/attributes.py:1126: in _fire_loader_callables
+    return state._load_expired(state, passive)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state.py:828: in _load_expired
+    self.manager.expired_attribute_loader(self, toload, passive)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/loading.py:1674: in load_scalar_attributes
+    result = load_on_ident(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/loading.py:510: in load_on_ident
+    return load_on_pk_identity(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/loading.py:695: in load_on_pk_identity
+    session.execute(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2351: in execute
+    return self._execute_internal(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2239: in _execute_internal
+    conn = self._connection_for_bind(bind)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2108: in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+<string>:2: in _connection_for_bind
+    ???
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py:101: in _go
+    self._raise_for_prerequisite_state(fn.__name__, current_state)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7fa459a73440>
+operation_name = '_connection_for_bind'
+state = <SessionTransactionState.DEACTIVE: 4>
+
+    def _raise_for_prerequisite_state(
+        self, operation_name: str, state: _StateChangeState
+    ) -> NoReturn:
+        if state is SessionTransactionState.DEACTIVE:
+            if self._rollback_exception:
+>               raise sa_exc.PendingRollbackError(
+                    "This Session's transaction has been rolled back "
+                    "due to a previous exception during flush."
+                    " To begin a new transaction with this Session, "
+                    "first issue Session.rollback()."
+                    f" Original exception was: {self._rollback_exception}",
+                    code="7s2a",
+                )
+E               sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (psycopg2.errors.CannotCoerce) cannot cast type text[] to tstzrange
+E               LINE 1: ...-18T21:55:44.123177','2026-02-18T23:55:44.123177']::TSTZRANG...
+E                                                                            ^
+E               
+E               [SQL: INSERT INTO events (id, organizer_id, title, description, status, space_id, time_range, capacity) VALUES (%(id)s::UUID, %(organizer_id)s::UUID, %(title)s, %(description)s, %(status)s, %(space_id)s::UUID, %(time_range)s::TSTZRANGE, %(capacity)s) RETURNING events.created_at, events.updated_at]
+E               [parameters: {'id': UUID('c16f6d88-8989-4348-9c97-7d89ef58f741'), 'organizer_id': UUID('6bf83366-08fe-491d-ad42-dd66de57bdd2'), 'title': 'Valid Event', 'description': 'This is a valid event', 'status': 'published', 'space_id': UUID('660586c6-4374-436c-9ef4-064986bfa7bc'), 'time_range': ['2026-02-18T21:55:44.123177', '2026-02-18T23:55:44.123177'], 'capacity': 20}]
+E               (Background on this error at: https://sqlalche.me/e/20/f405) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:971: PendingRollbackError
+_________________________ test_create_event_today_fail _________________________
+
+client = <starlette.testclient.TestClient object at 0x7fa45998c670>
+test_space = <app.models.venues.Space object at 0x7fa4383d94c0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTc4NDQsInN1YiI6IjZiZjgzMzY2LTA4ZmUtNDk...kZTU3YmRkMiIsImp0aSI6IjZjMzM1YThkLTNiNGYtNDAzZC05ZDUwLTVlOTA1NjU5MjFjOCJ9._xzpjl8Ot_F_YKVt_63gOn8E-CdobuUdO85yzHGQwTY'}
+
+    def test_create_event_today_fail(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # Schedule for later today
+        start_time = datetime.now() + timedelta(hours=1)
+        end_time = start_time + timedelta(hours=2)
+    
+        data = {
+            "title": "Today Event",
+>           "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()]
+        }
+
+tests/api/v1/test_organizer_crud.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/attributes.py:569: in __get__
+    return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/attributes.py:1096: in get
+    value = self._fire_loader_callables(state, key, passive)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/attributes.py:1126: in _fire_loader_callables
+    return state._load_expired(state, passive)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state.py:828: in _load_expired
+    self.manager.expired_attribute_loader(self, toload, passive)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/loading.py:1674: in load_scalar_attributes
+    result = load_on_ident(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/loading.py:510: in load_on_ident
+    return load_on_pk_identity(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/loading.py:695: in load_on_pk_identity
+    session.execute(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2351: in execute
+    return self._execute_internal(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2239: in _execute_internal
+    conn = self._connection_for_bind(bind)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2108: in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+<string>:2: in _connection_for_bind
+    ???
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py:101: in _go
+    self._raise_for_prerequisite_state(fn.__name__, current_state)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7fa459a73440>
+operation_name = '_connection_for_bind'
+state = <SessionTransactionState.DEACTIVE: 4>
+
+    def _raise_for_prerequisite_state(
+        self, operation_name: str, state: _StateChangeState
+    ) -> NoReturn:
+        if state is SessionTransactionState.DEACTIVE:
+            if self._rollback_exception:
+>               raise sa_exc.PendingRollbackError(
+                    "This Session's transaction has been rolled back "
+                    "due to a previous exception during flush."
+                    " To begin a new transaction with this Session, "
+                    "first issue Session.rollback()."
+                    f" Original exception was: {self._rollback_exception}",
+                    code="7s2a",
+                )
+E               sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (psycopg2.errors.CannotCoerce) cannot cast type text[] to tstzrange
+E               LINE 1: ...-18T21:55:44.123177','2026-02-18T23:55:44.123177']::TSTZRANG...
+E                                                                            ^
+E               
+E               [SQL: INSERT INTO events (id, organizer_id, title, description, status, space_id, time_range, capacity) VALUES (%(id)s::UUID, %(organizer_id)s::UUID, %(title)s, %(description)s, %(status)s, %(space_id)s::UUID, %(time_range)s::TSTZRANGE, %(capacity)s) RETURNING events.created_at, events.updated_at]
+E               [parameters: {'id': UUID('c16f6d88-8989-4348-9c97-7d89ef58f741'), 'organizer_id': UUID('6bf83366-08fe-491d-ad42-dd66de57bdd2'), 'title': 'Valid Event', 'description': 'This is a valid event', 'status': 'published', 'space_id': UUID('660586c6-4374-436c-9ef4-064986bfa7bc'), 'time_range': ['2026-02-18T21:55:44.123177', '2026-02-18T23:55:44.123177'], 'capacity': 20}]
+E               (Background on this error at: https://sqlalche.me/e/20/f405) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:971: PendingRollbackError
+_______________________ test_create_session_overlap_fail _______________________
+
+client = <starlette.testclient.TestClient object at 0x7fa45998c670>
+test_space = <app.models.venues.Space object at 0x7fa4383d94c0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTc4NDQsInN1YiI6IjZiZjgzMzY2LTA4ZmUtNDk...kZTU3YmRkMiIsImp0aSI6IjZjMzM1YThkLTNiNGYtNDAzZC05ZDUwLTVlOTA1NjU5MjFjOCJ9._xzpjl8Ot_F_YKVt_63gOn8E-CdobuUdO85yzHGQwTY'}
+
+    def test_create_session_overlap_fail(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # First create a valid event
+        start_time = datetime.now() + timedelta(days=3)
+        end_time = start_time + timedelta(hours=4)
+    
+        event_data = {
+            "title": "Base Event",
+>           "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()]
+        }
+
+tests/api/v1/test_organizer_crud.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/attributes.py:569: in __get__
+    return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/attributes.py:1096: in get
+    value = self._fire_loader_callables(state, key, passive)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/attributes.py:1126: in _fire_loader_callables
+    return state._load_expired(state, passive)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state.py:828: in _load_expired
+    self.manager.expired_attribute_loader(self, toload, passive)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/loading.py:1674: in load_scalar_attributes
+    result = load_on_ident(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/loading.py:510: in load_on_ident
+    return load_on_pk_identity(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/loading.py:695: in load_on_pk_identity
+    session.execute(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2351: in execute
+    return self._execute_internal(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2239: in _execute_internal
+    conn = self._connection_for_bind(bind)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2108: in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+<string>:2: in _connection_for_bind
+    ???
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py:101: in _go
+    self._raise_for_prerequisite_state(fn.__name__, current_state)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7fa459a73440>
+operation_name = '_connection_for_bind'
+state = <SessionTransactionState.DEACTIVE: 4>
+
+    def _raise_for_prerequisite_state(
+        self, operation_name: str, state: _StateChangeState
+    ) -> NoReturn:
+        if state is SessionTransactionState.DEACTIVE:
+            if self._rollback_exception:
+>               raise sa_exc.PendingRollbackError(
+                    "This Session's transaction has been rolled back "
+                    "due to a previous exception during flush."
+                    " To begin a new transaction with this Session, "
+                    "first issue Session.rollback()."
+                    f" Original exception was: {self._rollback_exception}",
+                    code="7s2a",
+                )
+E               sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (psycopg2.errors.CannotCoerce) cannot cast type text[] to tstzrange
+E               LINE 1: ...-18T21:55:44.123177','2026-02-18T23:55:44.123177']::TSTZRANG...
+E                                                                            ^
+E               
+E               [SQL: INSERT INTO events (id, organizer_id, title, description, status, space_id, time_range, capacity) VALUES (%(id)s::UUID, %(organizer_id)s::UUID, %(title)s, %(description)s, %(status)s, %(space_id)s::UUID, %(time_range)s::TSTZRANGE, %(capacity)s) RETURNING events.created_at, events.updated_at]
+E               [parameters: {'id': UUID('c16f6d88-8989-4348-9c97-7d89ef58f741'), 'organizer_id': UUID('6bf83366-08fe-491d-ad42-dd66de57bdd2'), 'title': 'Valid Event', 'description': 'This is a valid event', 'status': 'published', 'space_id': UUID('660586c6-4374-436c-9ef4-064986bfa7bc'), 'time_range': ['2026-02-18T21:55:44.123177', '2026-02-18T23:55:44.123177'], 'capacity': 20}]
+E               (Background on this error at: https://sqlalche.me/e/20/f405) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:971: PendingRollbackError
+__________________________ test_create_session_valid ___________________________
+
+client = <starlette.testclient.TestClient object at 0x7fa45998c670>
+test_space = <app.models.venues.Space object at 0x7fa4383d94c0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTc4NDQsInN1YiI6IjZiZjgzMzY2LTA4ZmUtNDk...kZTU3YmRkMiIsImp0aSI6IjZjMzM1YThkLTNiNGYtNDAzZC05ZDUwLTVlOTA1NjU5MjFjOCJ9._xzpjl8Ot_F_YKVt_63gOn8E-CdobuUdO85yzHGQwTY'}
+
+    def test_create_session_valid(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # Create valid event
+        start_time = datetime.now() + timedelta(days=4)
+        end_time = start_time + timedelta(hours=4)
+    
+        event_data = {
+            "title": "Base Event 2",
+>           "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()]
+        }
+
+tests/api/v1/test_organizer_crud.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/attributes.py:569: in __get__
+    return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/attributes.py:1096: in get
+    value = self._fire_loader_callables(state, key, passive)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/attributes.py:1126: in _fire_loader_callables
+    return state._load_expired(state, passive)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state.py:828: in _load_expired
+    self.manager.expired_attribute_loader(self, toload, passive)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/loading.py:1674: in load_scalar_attributes
+    result = load_on_ident(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/loading.py:510: in load_on_ident
+    return load_on_pk_identity(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/loading.py:695: in load_on_pk_identity
+    session.execute(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2351: in execute
+    return self._execute_internal(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2239: in _execute_internal
+    conn = self._connection_for_bind(bind)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2108: in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+<string>:2: in _connection_for_bind
+    ???
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py:101: in _go
+    self._raise_for_prerequisite_state(fn.__name__, current_state)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7fa459a73440>
+operation_name = '_connection_for_bind'
+state = <SessionTransactionState.DEACTIVE: 4>
+
+    def _raise_for_prerequisite_state(
+        self, operation_name: str, state: _StateChangeState
+    ) -> NoReturn:
+        if state is SessionTransactionState.DEACTIVE:
+            if self._rollback_exception:
+>               raise sa_exc.PendingRollbackError(
+                    "This Session's transaction has been rolled back "
+                    "due to a previous exception during flush."
+                    " To begin a new transaction with this Session, "
+                    "first issue Session.rollback()."
+                    f" Original exception was: {self._rollback_exception}",
+                    code="7s2a",
+                )
+E               sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (psycopg2.errors.CannotCoerce) cannot cast type text[] to tstzrange
+E               LINE 1: ...-18T21:55:44.123177','2026-02-18T23:55:44.123177']::TSTZRANG...
+E                                                                            ^
+E               
+E               [SQL: INSERT INTO events (id, organizer_id, title, description, status, space_id, time_range, capacity) VALUES (%(id)s::UUID, %(organizer_id)s::UUID, %(title)s, %(description)s, %(status)s, %(space_id)s::UUID, %(time_range)s::TSTZRANGE, %(capacity)s) RETURNING events.created_at, events.updated_at]
+E               [parameters: {'id': UUID('c16f6d88-8989-4348-9c97-7d89ef58f741'), 'organizer_id': UUID('6bf83366-08fe-491d-ad42-dd66de57bdd2'), 'title': 'Valid Event', 'description': 'This is a valid event', 'status': 'published', 'space_id': UUID('660586c6-4374-436c-9ef4-064986bfa7bc'), 'time_range': ['2026-02-18T21:55:44.123177', '2026-02-18T23:55:44.123177'], 'capacity': 20}]
+E               (Background on this error at: https://sqlalche.me/e/20/f405) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:971: PendingRollbackError
+=============================== warnings summary ===============================
+../../../../../../opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8
+  /opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+=========================== short test summary info ============================
+FAILED tests/api/v1/test_organizer_crud.py::test_create_event_valid - sqlalch...
+FAILED tests/api/v1/test_organizer_crud.py::test_create_event_past_fail - sql...
+FAILED tests/api/v1/test_organizer_crud.py::test_create_event_today_fail - sq...
+FAILED tests/api/v1/test_organizer_crud.py::test_create_session_overlap_fail
+FAILED tests/api/v1/test_organizer_crud.py::test_create_session_valid - sqlal...
+==================== 5 failed, 1 passed, 1 warning in 2.32s ====================

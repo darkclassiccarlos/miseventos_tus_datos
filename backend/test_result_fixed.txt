@@ -1,0 +1,129 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.8.8, pytest-6.2.3, py-1.10.0, pluggy-0.13.1
+rootdir: /Users/carlosbautista/Desktop/Escritorio - MacBook Pro de Carlos/TusTados/backend
+plugins: anyio-3.4.0
+collected 26 items
+
+tests/test_env_debug.py .                                                [  3%]
+tests/test_idempotency.py ...                                            [ 15%]
+tests/test_main.py ..                                                    [ 23%]
+tests/api/v1/test_events.py ......                                       [ 46%]
+tests/api/v1/test_login.py ....                                          [ 61%]
+tests/api/v1/test_registrations.py ....                                  [ 76%]
+tests/api/v1/test_users.py ...F..                                        [100%]
+
+=================================== FAILURES ===================================
+__________________________ test_update_user_as_admin ___________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb23a18e430>
+db = <sqlalchemy.orm.session.Session object at 0x7fb23a18e2e0>
+admin_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTcxMTAsInN1YiI6IjE0YmM0MzViLTFjYzgtNDB...wMDRhM2IzZCIsImp0aSI6ImU2ZmUwNjg5LTA1NDEtNDNkNi05ZjJiLWJmYTcxZjM4OTYzZiJ9.xSYGIW48T2EJzZmpaCt6HqVulkbipBuWvmbbYvgVytc'}
+
+    def test_update_user_as_admin(client: TestClient, db: Session, admin_token_headers: dict) -> None:
+        email = "tobeupdated@example.com"
+        user_data = {"email": email, "password": "password", "full_name": "To Be Updated"}
+        client.post(f"{settings.API_V1_STR}/users/register", json=user_data)
+    
+        user = db.query(User).filter(User.email == email).first()
+        user_id = str(user.id)
+    
+        update_data = {"full_name": "Updated Name", "role_names": ["organizer"]}
+>       response = client.put(
+            f"{settings.API_V1_STR}/users/{user_id}",
+            json=update_data,
+            headers=admin_token_headers,
+        )
+
+tests/api/v1/test_users.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:602: in put
+    return self.request('PUT', url, data=data, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:226: in app
+    raw_response = await run_endpoint_function(
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:161: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/concurrency.py:39: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/to_thread.py:28: in run_sync
+    return await get_asynclib().run_sync_in_worker_thread(func, *args, cancellable=cancellable,
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:818: in run_sync_in_worker_thread
+    return await future
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:754: in run
+    result = context.run(func, *args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @router.put("/{user_id}", response_model=user_schema.User)
+    def update_user(
+        *,
+        db: Session = Depends(deps.get_db),
+        user_id: UUID,
+        user_in: user_schema.UserUpdate,
+        current_user: User = Depends(deps.get_current_active_superuser),
+    ) -> Any:
+        """
+        Update a user. (Admin only)
+        """
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="The user with this id does not exist in the system",
+            )
+    
+>       update_data = user_in.model_dump(exclude_unset=True)
+E       AttributeError: 'UserUpdate' object has no attribute 'model_dump'
+
+app/api/v1/endpoints/users.py:139: AttributeError
+=============================== warnings summary ===============================
+../../../../../../opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8
+  /opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+=========================== short test summary info ============================
+FAILED tests/api/v1/test_users.py::test_update_user_as_admin - AttributeError...
+=================== 1 failed, 25 passed, 1 warning in 8.22s ====================

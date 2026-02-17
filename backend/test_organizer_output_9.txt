@@ -1,0 +1,354 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.8.8, pytest-6.2.3, py-1.10.0, pluggy-0.13.1
+rootdir: /Users/carlosbautista/Desktop/Escritorio - MacBook Pro de Carlos/TusTados/backend
+plugins: anyio-3.4.0
+collected 6 items
+
+tests/api/v1/test_organizer_crud.py .F..FF                               [100%]
+
+=================================== FAILURES ===================================
+___________________________ test_create_event_valid ____________________________
+
+client = <starlette.testclient.TestClient object at 0x7ff20801d8b0>
+test_space = <app.models.venues.Space object at 0x7ff2307108e0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTgzOTgsInN1YiI6Ijg4ZmIzOWY2LTM0NzMtNDA...0MjdkMzIzMiIsImp0aSI6ImNjYWRhYWFlLTA1Y2YtNDk1Zi1iYzMxLWI3Y2FjOTQwYWM5MiJ9.5Ppq9fxMh-Ze-urm2ipsjQBiNuepw1cnAXAmncNP-VU'}
+
+    def test_create_event_valid(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # Schedule for 2 days from now at 12:00
+        base = datetime.now() + timedelta(days=2)
+        start_time = base.replace(hour=12, minute=0, second=0, microsecond=0)
+        end_time = start_time + timedelta(hours=2)
+    
+        data = {
+            "title": "Valid Event",
+            "description": "This is a valid event",
+            "status": "published",
+            "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()],
+            "capacity": 20
+        }
+    
+>       r = client.post(f"{settings.API_V1_STR}/events/", headers=organizer_token_headers, json=data)
+
+tests/api/v1/test_organizer_crud.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:250: in app
+    response = actual_response_class(response_data, **response_args)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/responses.py:49: in __init__
+    self.body = self.render(content)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/responses.py:157: in render
+    return json.dumps(
+/opt/anaconda3/lib/python3.8/json/__init__.py:234: in dumps
+    return cls(
+/opt/anaconda3/lib/python3.8/json/encoder.py:199: in encode
+    chunks = self.iterencode(o, _one_shot=True)
+/opt/anaconda3/lib/python3.8/json/encoder.py:257: in iterencode
+    return _iterencode(o, 0)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.encoder.JSONEncoder object at 0x7ff2307a0580>
+o = datetime.datetime(2026, 2, 18, 12, 0, tzinfo=datetime.timezone.utc)
+
+    def default(self, o):
+        """Implement this method in a subclass such that it returns
+        a serializable object for ``o``, or calls the base implementation
+        (to raise a ``TypeError``).
+    
+        For example, to support arbitrary iterators, you could
+        implement default like this::
+    
+            def default(self, o):
+                try:
+                    iterable = iter(o)
+                except TypeError:
+                    pass
+                else:
+                    return list(iterable)
+                # Let the base class default method raise the TypeError
+                return JSONEncoder.default(self, o)
+    
+        """
+>       raise TypeError(f'Object of type {o.__class__.__name__} '
+                        f'is not JSON serializable')
+E       TypeError: Object of type datetime is not JSON serializable
+
+/opt/anaconda3/lib/python3.8/json/encoder.py:179: TypeError
+----------------------------- Captured stdout call -----------------------------
+DEBUG: Event time_range from_orm: [2026-02-18 12:00:00+00:00,2026-02-18 14:00:00+00:00] (Type: <class 'sqlalchemy.dialects.postgresql.ranges.Range'>)
+_______________________ test_create_session_overlap_fail _______________________
+
+client = <starlette.testclient.TestClient object at 0x7ff20801d8b0>
+test_space = <app.models.venues.Space object at 0x7ff2307108e0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTgzOTgsInN1YiI6Ijg4ZmIzOWY2LTM0NzMtNDA...0MjdkMzIzMiIsImp0aSI6ImNjYWRhYWFlLTA1Y2YtNDk1Zi1iYzMxLWI3Y2FjOTQwYWM5MiJ9.5Ppq9fxMh-Ze-urm2ipsjQBiNuepw1cnAXAmncNP-VU'}
+
+    def test_create_session_overlap_fail(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # First create a valid event at 12:00
+        base = datetime.now() + timedelta(days=3)
+        start_time = base.replace(hour=12, minute=0, second=0, microsecond=0)
+        end_time = start_time + timedelta(hours=4)
+    
+        event_data = {
+            "title": "Base Event",
+            "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()]
+        }
+>       r = client.post(f"{settings.API_V1_STR}/events/", headers=organizer_token_headers, json=event_data)
+
+tests/api/v1/test_organizer_crud.py:94: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:250: in app
+    response = actual_response_class(response_data, **response_args)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/responses.py:49: in __init__
+    self.body = self.render(content)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/responses.py:157: in render
+    return json.dumps(
+/opt/anaconda3/lib/python3.8/json/__init__.py:234: in dumps
+    return cls(
+/opt/anaconda3/lib/python3.8/json/encoder.py:199: in encode
+    chunks = self.iterencode(o, _one_shot=True)
+/opt/anaconda3/lib/python3.8/json/encoder.py:257: in iterencode
+    return _iterencode(o, 0)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.encoder.JSONEncoder object at 0x7ff2307a0b80>
+o = datetime.datetime(2026, 2, 19, 12, 0, tzinfo=datetime.timezone.utc)
+
+    def default(self, o):
+        """Implement this method in a subclass such that it returns
+        a serializable object for ``o``, or calls the base implementation
+        (to raise a ``TypeError``).
+    
+        For example, to support arbitrary iterators, you could
+        implement default like this::
+    
+            def default(self, o):
+                try:
+                    iterable = iter(o)
+                except TypeError:
+                    pass
+                else:
+                    return list(iterable)
+                # Let the base class default method raise the TypeError
+                return JSONEncoder.default(self, o)
+    
+        """
+>       raise TypeError(f'Object of type {o.__class__.__name__} '
+                        f'is not JSON serializable')
+E       TypeError: Object of type datetime is not JSON serializable
+
+/opt/anaconda3/lib/python3.8/json/encoder.py:179: TypeError
+----------------------------- Captured stdout call -----------------------------
+DEBUG: Event time_range from_orm: [2026-02-19 12:00:00+00:00,2026-02-19 16:00:00+00:00] (Type: <class 'sqlalchemy.dialects.postgresql.ranges.Range'>)
+__________________________ test_create_session_valid ___________________________
+
+client = <starlette.testclient.TestClient object at 0x7ff20801d8b0>
+test_space = <app.models.venues.Space object at 0x7ff2307108e0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTgzOTgsInN1YiI6Ijg4ZmIzOWY2LTM0NzMtNDA...0MjdkMzIzMiIsImp0aSI6ImNjYWRhYWFlLTA1Y2YtNDk1Zi1iYzMxLWI3Y2FjOTQwYWM5MiJ9.5Ppq9fxMh-Ze-urm2ipsjQBiNuepw1cnAXAmncNP-VU'}
+
+    def test_create_session_valid(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # Create valid event at 12:00
+        base = datetime.now() + timedelta(days=4)
+        start_time = base.replace(hour=12, minute=0, second=0, microsecond=0)
+        end_time = start_time + timedelta(hours=4)
+    
+        event_data = {
+            "title": "Base Event 2",
+            "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()]
+        }
+>       r = client.post(f"{settings.API_V1_STR}/events/", headers=organizer_token_headers, json=event_data)
+
+tests/api/v1/test_organizer_crud.py:121: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:250: in app
+    response = actual_response_class(response_data, **response_args)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/responses.py:49: in __init__
+    self.body = self.render(content)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/responses.py:157: in render
+    return json.dumps(
+/opt/anaconda3/lib/python3.8/json/__init__.py:234: in dumps
+    return cls(
+/opt/anaconda3/lib/python3.8/json/encoder.py:199: in encode
+    chunks = self.iterencode(o, _one_shot=True)
+/opt/anaconda3/lib/python3.8/json/encoder.py:257: in iterencode
+    return _iterencode(o, 0)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.encoder.JSONEncoder object at 0x7ff200975af0>
+o = datetime.datetime(2026, 2, 20, 12, 0, tzinfo=datetime.timezone.utc)
+
+    def default(self, o):
+        """Implement this method in a subclass such that it returns
+        a serializable object for ``o``, or calls the base implementation
+        (to raise a ``TypeError``).
+    
+        For example, to support arbitrary iterators, you could
+        implement default like this::
+    
+            def default(self, o):
+                try:
+                    iterable = iter(o)
+                except TypeError:
+                    pass
+                else:
+                    return list(iterable)
+                # Let the base class default method raise the TypeError
+                return JSONEncoder.default(self, o)
+    
+        """
+>       raise TypeError(f'Object of type {o.__class__.__name__} '
+                        f'is not JSON serializable')
+E       TypeError: Object of type datetime is not JSON serializable
+
+/opt/anaconda3/lib/python3.8/json/encoder.py:179: TypeError
+----------------------------- Captured stdout call -----------------------------
+DEBUG: Event time_range from_orm: [2026-02-20 12:00:00+00:00,2026-02-20 16:00:00+00:00] (Type: <class 'sqlalchemy.dialects.postgresql.ranges.Range'>)
+=============================== warnings summary ===============================
+../../../../../../opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8
+  /opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+=========================== short test summary info ============================
+FAILED tests/api/v1/test_organizer_crud.py::test_create_event_valid - TypeErr...
+FAILED tests/api/v1/test_organizer_crud.py::test_create_session_overlap_fail
+FAILED tests/api/v1/test_organizer_crud.py::test_create_session_valid - TypeE...
+==================== 3 failed, 3 passed, 1 warning in 2.16s ====================

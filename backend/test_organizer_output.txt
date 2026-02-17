@@ -1,0 +1,417 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.8.8, pytest-6.2.3, py-1.10.0, pluggy-0.13.1
+rootdir: /Users/carlosbautista/Desktop/Escritorio - MacBook Pro de Carlos/TusTados/backend
+plugins: anyio-3.4.0
+collected 6 items
+
+tests/api/v1/test_organizer_crud.py .EEEEE                               [100%]
+
+==================================== ERRORS ====================================
+__________________ ERROR at setup of test_create_event_valid ___________________
+
+self = <sqlalchemy.engine.base.Connection object at 0x7fd4404dda00>
+dialect = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7fd431f495e0>
+context = <sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2 object at 0x7fd432017130>
+statement = <sqlalchemy.dialects.postgresql.base.PGCompiler object at 0x7fd44050eb80>
+parameters = [{'address': None, 'city': 'Test City', 'country': None, 'id': UUID('0b6e031b-aa66-41cc-9c73-9140b0d8d6f6'), ...}]
+
+    def _exec_single_context(
+        self,
+        dialect: Dialect,
+        context: ExecutionContext,
+        statement: Union[str, Compiled],
+        parameters: Optional[_AnyMultiExecuteParams],
+    ) -> CursorResult[Any]:
+        """continue the _execute_context() method for a single DBAPI
+        cursor.execute() or cursor.executemany() call.
+    
+        """
+        if dialect.bind_typing is BindTyping.SETINPUTSIZES:
+            generic_setinputsizes = context._prepare_set_input_sizes()
+    
+            if generic_setinputsizes:
+                try:
+                    dialect.do_set_input_sizes(
+                        context.cursor, generic_setinputsizes, context
+                    )
+                except BaseException as e:
+                    self._handle_dbapi_exception(
+                        e, str(statement), parameters, None, context
+                    )
+    
+        cursor, str_statement, parameters = (
+            context.cursor,
+            context.statement,
+            context.parameters,
+        )
+    
+        effective_parameters: Optional[_AnyExecuteParams]
+    
+        if not context.executemany:
+            effective_parameters = parameters[0]
+        else:
+            effective_parameters = parameters
+    
+        if self._has_events or self.engine._has_events:
+            for fn in self.dispatch.before_cursor_execute:
+                str_statement, effective_parameters = fn(
+                    self,
+                    cursor,
+                    str_statement,
+                    effective_parameters,
+                    context,
+                    context.executemany,
+                )
+    
+        if self._echo:
+            self._log_info(str_statement)
+    
+            stats = context._get_cache_stats()
+    
+            if not self.engine.hide_parameters:
+                self._log_info(
+                    "[%s] %r",
+                    stats,
+                    sql_util._repr_params(
+                        effective_parameters,
+                        batches=10,
+                        ismulti=context.executemany,
+                    ),
+                )
+            else:
+                self._log_info(
+                    "[%s] [SQL parameters hidden due to hide_parameters=True]",
+                    stats,
+                )
+    
+        evt_handled: bool = False
+        try:
+            if context.execute_style is ExecuteStyle.EXECUTEMANY:
+                effective_parameters = cast(
+                    "_CoreMultiExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_executemany:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_executemany(
+                        cursor,
+                        str_statement,
+                        effective_parameters,
+                        context,
+                    )
+            elif not effective_parameters and context.no_parameters:
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute_no_params:
+                        if fn(cursor, str_statement, context):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_execute_no_params(
+                        cursor, str_statement, context
+                    )
+            else:
+                effective_parameters = cast(
+                    "_CoreSingleExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+>                   self.dialect.do_execute(
+                        cursor, str_statement, effective_parameters, context
+                    )
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1967: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7fd431f495e0>
+cursor = <cursor object at 0x7fd440513310; closed: -1>
+statement = 'INSERT INTO venues (id, name, address, city, country, latitude, longitude, is_active) VALUES (%(id)s::UUID, %(name)s,...s)s, %(city)s, %(country)s, %(latitude)s, %(longitude)s, %(is_active)s) RETURNING venues.created_at, venues.updated_at'
+parameters = {'address': None, 'city': 'Test City', 'country': None, 'id': UUID('0b6e031b-aa66-41cc-9c73-9140b0d8d6f6'), ...}
+context = <sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2 object at 0x7fd432017130>
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+>       cursor.execute(statement, parameters)
+E       psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "uq_venue_name_city"
+E       DETAIL:  Key (name, city)=(Test Venue, Test City) already exists.
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:952: UniqueViolation
+
+The above exception was the direct cause of the following exception:
+
+db = <sqlalchemy.orm.session.Session object at 0x7fd4404699a0>
+
+    @pytest.fixture
+    def test_space(db: Session):
+        venue = Venue(name="Test Venue", city="Test City")
+        db.add(venue)
+>       db.commit()
+
+tests/api/v1/test_organizer_crud.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2030: in commit
+    trans.commit(_to_root=True)
+<string>:2: in commit
+    ???
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py:137: in _go
+    ret_value = fn(self, *arg, **kw)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:1311: in commit
+    self._prepare_impl()
+<string>:2: in _prepare_impl
+    ???
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py:137: in _go
+    ret_value = fn(self, *arg, **kw)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:1286: in _prepare_impl
+    self.session.flush()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:4331: in flush
+    self._flush(objects)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:4467: in _flush
+    transaction.rollback(_capture_exception=True)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:4427: in _flush
+    flush_context.execute()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/unitofwork.py:466: in execute
+    rec.execute(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/unitofwork.py:642: in execute
+    util.preloaded.orm_persistence.save_obj(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/persistence.py:93: in save_obj
+    _emit_insert_statements(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/persistence.py:1233: in _emit_insert_statements
+    result = connection.execute(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1419: in execute
+    return meth(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/sql/elements.py:527: in _execute_on_connection
+    return connection._execute_clauseelement(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1641: in _execute_clauseelement
+    ret = self._execute_context(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1846: in _execute_context
+    return self._exec_single_context(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1986: in _exec_single_context
+    self._handle_dbapi_exception(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:2363: in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1967: in _exec_single_context
+    self.dialect.do_execute(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7fd431f495e0>
+cursor = <cursor object at 0x7fd440513310; closed: -1>
+statement = 'INSERT INTO venues (id, name, address, city, country, latitude, longitude, is_active) VALUES (%(id)s::UUID, %(name)s,...s)s, %(city)s, %(country)s, %(latitude)s, %(longitude)s, %(is_active)s) RETURNING venues.created_at, venues.updated_at'
+parameters = {'address': None, 'city': 'Test City', 'country': None, 'id': UUID('0b6e031b-aa66-41cc-9c73-9140b0d8d6f6'), ...}
+context = <sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2 object at 0x7fd432017130>
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+>       cursor.execute(statement, parameters)
+E       sqlalchemy.exc.IntegrityError: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "uq_venue_name_city"
+E       DETAIL:  Key (name, city)=(Test Venue, Test City) already exists.
+E       
+E       [SQL: INSERT INTO venues (id, name, address, city, country, latitude, longitude, is_active) VALUES (%(id)s::UUID, %(name)s, %(address)s, %(city)s, %(country)s, %(latitude)s, %(longitude)s, %(is_active)s) RETURNING venues.created_at, venues.updated_at]
+E       [parameters: {'id': UUID('0b6e031b-aa66-41cc-9c73-9140b0d8d6f6'), 'name': 'Test Venue', 'address': None, 'city': 'Test City', 'country': None, 'latitude': None, 'longitude': None, 'is_active': True}]
+E       (Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:952: IntegrityError
+________________ ERROR at setup of test_create_event_past_fail _________________
+
+db = <sqlalchemy.orm.session.Session object at 0x7fd4404699a0>
+
+    @pytest.fixture
+    def test_space(db: Session):
+        venue = Venue(name="Test Venue", city="Test City")
+        db.add(venue)
+>       db.commit()
+
+tests/api/v1/test_organizer_crud.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2030: in commit
+    trans.commit(_to_root=True)
+<string>:2: in commit
+    ???
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py:101: in _go
+    self._raise_for_prerequisite_state(fn.__name__, current_state)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7fd432011880>
+operation_name = 'commit', state = <SessionTransactionState.DEACTIVE: 4>
+
+    def _raise_for_prerequisite_state(
+        self, operation_name: str, state: _StateChangeState
+    ) -> NoReturn:
+        if state is SessionTransactionState.DEACTIVE:
+            if self._rollback_exception:
+>               raise sa_exc.PendingRollbackError(
+                    "This Session's transaction has been rolled back "
+                    "due to a previous exception during flush."
+                    " To begin a new transaction with this Session, "
+                    "first issue Session.rollback()."
+                    f" Original exception was: {self._rollback_exception}",
+                    code="7s2a",
+                )
+E               sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "uq_venue_name_city"
+E               DETAIL:  Key (name, city)=(Test Venue, Test City) already exists.
+E               
+E               [SQL: INSERT INTO venues (id, name, address, city, country, latitude, longitude, is_active) VALUES (%(id)s::UUID, %(name)s, %(address)s, %(city)s, %(country)s, %(latitude)s, %(longitude)s, %(is_active)s) RETURNING venues.created_at, venues.updated_at]
+E               [parameters: {'id': UUID('0b6e031b-aa66-41cc-9c73-9140b0d8d6f6'), 'name': 'Test Venue', 'address': None, 'city': 'Test City', 'country': None, 'latitude': None, 'longitude': None, 'is_active': True}]
+E               (Background on this error at: https://sqlalche.me/e/20/gkpj) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:971: PendingRollbackError
+________________ ERROR at setup of test_create_event_today_fail ________________
+
+db = <sqlalchemy.orm.session.Session object at 0x7fd4404699a0>
+
+    @pytest.fixture
+    def test_space(db: Session):
+        venue = Venue(name="Test Venue", city="Test City")
+        db.add(venue)
+>       db.commit()
+
+tests/api/v1/test_organizer_crud.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2030: in commit
+    trans.commit(_to_root=True)
+<string>:2: in commit
+    ???
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py:101: in _go
+    self._raise_for_prerequisite_state(fn.__name__, current_state)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7fd432011880>
+operation_name = 'commit', state = <SessionTransactionState.DEACTIVE: 4>
+
+    def _raise_for_prerequisite_state(
+        self, operation_name: str, state: _StateChangeState
+    ) -> NoReturn:
+        if state is SessionTransactionState.DEACTIVE:
+            if self._rollback_exception:
+>               raise sa_exc.PendingRollbackError(
+                    "This Session's transaction has been rolled back "
+                    "due to a previous exception during flush."
+                    " To begin a new transaction with this Session, "
+                    "first issue Session.rollback()."
+                    f" Original exception was: {self._rollback_exception}",
+                    code="7s2a",
+                )
+E               sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "uq_venue_name_city"
+E               DETAIL:  Key (name, city)=(Test Venue, Test City) already exists.
+E               
+E               [SQL: INSERT INTO venues (id, name, address, city, country, latitude, longitude, is_active) VALUES (%(id)s::UUID, %(name)s, %(address)s, %(city)s, %(country)s, %(latitude)s, %(longitude)s, %(is_active)s) RETURNING venues.created_at, venues.updated_at]
+E               [parameters: {'id': UUID('0b6e031b-aa66-41cc-9c73-9140b0d8d6f6'), 'name': 'Test Venue', 'address': None, 'city': 'Test City', 'country': None, 'latitude': None, 'longitude': None, 'is_active': True}]
+E               (Background on this error at: https://sqlalche.me/e/20/gkpj) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:971: PendingRollbackError
+______________ ERROR at setup of test_create_session_overlap_fail ______________
+
+db = <sqlalchemy.orm.session.Session object at 0x7fd4404699a0>
+
+    @pytest.fixture
+    def test_space(db: Session):
+        venue = Venue(name="Test Venue", city="Test City")
+        db.add(venue)
+>       db.commit()
+
+tests/api/v1/test_organizer_crud.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2030: in commit
+    trans.commit(_to_root=True)
+<string>:2: in commit
+    ???
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py:101: in _go
+    self._raise_for_prerequisite_state(fn.__name__, current_state)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7fd432011880>
+operation_name = 'commit', state = <SessionTransactionState.DEACTIVE: 4>
+
+    def _raise_for_prerequisite_state(
+        self, operation_name: str, state: _StateChangeState
+    ) -> NoReturn:
+        if state is SessionTransactionState.DEACTIVE:
+            if self._rollback_exception:
+>               raise sa_exc.PendingRollbackError(
+                    "This Session's transaction has been rolled back "
+                    "due to a previous exception during flush."
+                    " To begin a new transaction with this Session, "
+                    "first issue Session.rollback()."
+                    f" Original exception was: {self._rollback_exception}",
+                    code="7s2a",
+                )
+E               sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "uq_venue_name_city"
+E               DETAIL:  Key (name, city)=(Test Venue, Test City) already exists.
+E               
+E               [SQL: INSERT INTO venues (id, name, address, city, country, latitude, longitude, is_active) VALUES (%(id)s::UUID, %(name)s, %(address)s, %(city)s, %(country)s, %(latitude)s, %(longitude)s, %(is_active)s) RETURNING venues.created_at, venues.updated_at]
+E               [parameters: {'id': UUID('0b6e031b-aa66-41cc-9c73-9140b0d8d6f6'), 'name': 'Test Venue', 'address': None, 'city': 'Test City', 'country': None, 'latitude': None, 'longitude': None, 'is_active': True}]
+E               (Background on this error at: https://sqlalche.me/e/20/gkpj) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:971: PendingRollbackError
+_________________ ERROR at setup of test_create_session_valid __________________
+
+db = <sqlalchemy.orm.session.Session object at 0x7fd4404699a0>
+
+    @pytest.fixture
+    def test_space(db: Session):
+        venue = Venue(name="Test Venue", city="Test City")
+        db.add(venue)
+>       db.commit()
+
+tests/api/v1/test_organizer_crud.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:2030: in commit
+    trans.commit(_to_root=True)
+<string>:2: in commit
+    ???
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py:101: in _go
+    self._raise_for_prerequisite_state(fn.__name__, current_state)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7fd432011880>
+operation_name = 'commit', state = <SessionTransactionState.DEACTIVE: 4>
+
+    def _raise_for_prerequisite_state(
+        self, operation_name: str, state: _StateChangeState
+    ) -> NoReturn:
+        if state is SessionTransactionState.DEACTIVE:
+            if self._rollback_exception:
+>               raise sa_exc.PendingRollbackError(
+                    "This Session's transaction has been rolled back "
+                    "due to a previous exception during flush."
+                    " To begin a new transaction with this Session, "
+                    "first issue Session.rollback()."
+                    f" Original exception was: {self._rollback_exception}",
+                    code="7s2a",
+                )
+E               sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "uq_venue_name_city"
+E               DETAIL:  Key (name, city)=(Test Venue, Test City) already exists.
+E               
+E               [SQL: INSERT INTO venues (id, name, address, city, country, latitude, longitude, is_active) VALUES (%(id)s::UUID, %(name)s, %(address)s, %(city)s, %(country)s, %(latitude)s, %(longitude)s, %(is_active)s) RETURNING venues.created_at, venues.updated_at]
+E               [parameters: {'id': UUID('0b6e031b-aa66-41cc-9c73-9140b0d8d6f6'), 'name': 'Test Venue', 'address': None, 'city': 'Test City', 'country': None, 'latitude': None, 'longitude': None, 'is_active': True}]
+E               (Background on this error at: https://sqlalche.me/e/20/gkpj) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/orm/session.py:971: PendingRollbackError
+=============================== warnings summary ===============================
+../../../../../../opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8
+  /opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+=========================== short test summary info ============================
+ERROR tests/api/v1/test_organizer_crud.py::test_create_event_valid - sqlalche...
+ERROR tests/api/v1/test_organizer_crud.py::test_create_event_past_fail - sqla...
+ERROR tests/api/v1/test_organizer_crud.py::test_create_event_today_fail - sql...
+ERROR tests/api/v1/test_organizer_crud.py::test_create_session_overlap_fail
+ERROR tests/api/v1/test_organizer_crud.py::test_create_session_valid - sqlalc...
+==================== 1 passed, 1 warning, 5 errors in 1.69s ====================

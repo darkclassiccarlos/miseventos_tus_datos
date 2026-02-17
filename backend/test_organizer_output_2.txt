@@ -1,0 +1,513 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.8.8, pytest-6.2.3, py-1.10.0, pluggy-0.13.1
+rootdir: /Users/carlosbautista/Desktop/Escritorio - MacBook Pro de Carlos/TusTados/backend
+plugins: anyio-3.4.0
+collected 6 items
+
+tests/api/v1/test_organizer_crud.py .FFFFF                               [100%]
+
+=================================== FAILURES ===================================
+___________________________ test_create_event_valid ____________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb7a06ce8e0>
+test_space = <app.models.venues.Space object at 0x7fb7606266a0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTc3NjIsInN1YiI6ImFmMjczNzgzLTU4ODQtNGI...hOTQwYjg4ZSIsImp0aSI6IjFkZWQyYTI1LTYzNzQtNDlhYy1iOTEzLWFkODg2OGZmNzBjZiJ9.u17YZBTCMsy-FceERZMEk1IywiTbUkVILt45yYOPuyI'}
+
+    def test_create_event_valid(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # Schedule for 2 days from now
+        start_time = datetime.now() + timedelta(days=2)
+        end_time = start_time + timedelta(hours=2)
+    
+        data = {
+            "title": "Valid Event",
+            "description": "This is a valid event",
+            "status": "published",
+            "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()],
+            "capacity": 20
+        }
+    
+>       r = client.post(f"{settings.API_V1_STR}/events/", headers=organizer_token_headers, json=data)
+
+tests/api/v1/test_organizer_crud.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:226: in app
+    raw_response = await run_endpoint_function(
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:161: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/concurrency.py:39: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/to_thread.py:28: in run_sync
+    return await get_asynclib().run_sync_in_worker_thread(func, *args, cancellable=cancellable,
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:818: in run_sync_in_worker_thread
+    return await future
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:754: in run
+    result = context.run(func, *args)
+app/api/v1/endpoints/events.py:103: in create_event
+    validate_event_dates(start_time, end_time)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+start_time = '2026-02-18T21:54:22.115834'
+end_time = '2026-02-18T23:54:22.115834'
+
+    def validate_event_dates(start_time: datetime, end_time: datetime) -> None:
+        """
+        Validates that:
+        1. start_time is in the future
+        2. start_time is not 'today' (must be at least tomorrow)
+        3. end_time is after start_time
+        4. start_time and end_time are on the same day
+        """
+>       now = datetime.now(start_time.tzinfo)
+E       AttributeError: 'str' object has no attribute 'tzinfo'
+
+app/core/utils.py:20: AttributeError
+_________________________ test_create_event_past_fail __________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb7a06ce8e0>
+test_space = <app.models.venues.Space object at 0x7fb7606266a0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTc3NjIsInN1YiI6ImFmMjczNzgzLTU4ODQtNGI...hOTQwYjg4ZSIsImp0aSI6IjFkZWQyYTI1LTYzNzQtNDlhYy1iOTEzLWFkODg2OGZmNzBjZiJ9.u17YZBTCMsy-FceERZMEk1IywiTbUkVILt45yYOPuyI'}
+
+    def test_create_event_past_fail(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # Schedule for yesterday
+        start_time = datetime.now() - timedelta(days=1)
+        end_time = start_time + timedelta(hours=2)
+    
+        data = {
+            "title": "Past Event",
+            "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()]
+        }
+    
+>       r = client.post(f"{settings.API_V1_STR}/events/", headers=organizer_token_headers, json=data)
+
+tests/api/v1/test_organizer_crud.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:226: in app
+    raw_response = await run_endpoint_function(
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:161: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/concurrency.py:39: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/to_thread.py:28: in run_sync
+    return await get_asynclib().run_sync_in_worker_thread(func, *args, cancellable=cancellable,
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:818: in run_sync_in_worker_thread
+    return await future
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:754: in run
+    result = context.run(func, *args)
+app/api/v1/endpoints/events.py:103: in create_event
+    validate_event_dates(start_time, end_time)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+start_time = '2026-02-15T21:54:22.345726'
+end_time = '2026-02-15T23:54:22.345726'
+
+    def validate_event_dates(start_time: datetime, end_time: datetime) -> None:
+        """
+        Validates that:
+        1. start_time is in the future
+        2. start_time is not 'today' (must be at least tomorrow)
+        3. end_time is after start_time
+        4. start_time and end_time are on the same day
+        """
+>       now = datetime.now(start_time.tzinfo)
+E       AttributeError: 'str' object has no attribute 'tzinfo'
+
+app/core/utils.py:20: AttributeError
+_________________________ test_create_event_today_fail _________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb7a06ce8e0>
+test_space = <app.models.venues.Space object at 0x7fb7606266a0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTc3NjIsInN1YiI6ImFmMjczNzgzLTU4ODQtNGI...hOTQwYjg4ZSIsImp0aSI6IjFkZWQyYTI1LTYzNzQtNDlhYy1iOTEzLWFkODg2OGZmNzBjZiJ9.u17YZBTCMsy-FceERZMEk1IywiTbUkVILt45yYOPuyI'}
+
+    def test_create_event_today_fail(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # Schedule for later today
+        start_time = datetime.now() + timedelta(hours=1)
+        end_time = start_time + timedelta(hours=2)
+    
+        data = {
+            "title": "Today Event",
+            "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()]
+        }
+    
+>       r = client.post(f"{settings.API_V1_STR}/events/", headers=organizer_token_headers, json=data)
+
+tests/api/v1/test_organizer_crud.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:226: in app
+    raw_response = await run_endpoint_function(
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:161: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/concurrency.py:39: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/to_thread.py:28: in run_sync
+    return await get_asynclib().run_sync_in_worker_thread(func, *args, cancellable=cancellable,
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:818: in run_sync_in_worker_thread
+    return await future
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:754: in run
+    result = context.run(func, *args)
+app/api/v1/endpoints/events.py:103: in create_event
+    validate_event_dates(start_time, end_time)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+start_time = '2026-02-16T22:54:22.513754'
+end_time = '2026-02-17T00:54:22.513754'
+
+    def validate_event_dates(start_time: datetime, end_time: datetime) -> None:
+        """
+        Validates that:
+        1. start_time is in the future
+        2. start_time is not 'today' (must be at least tomorrow)
+        3. end_time is after start_time
+        4. start_time and end_time are on the same day
+        """
+>       now = datetime.now(start_time.tzinfo)
+E       AttributeError: 'str' object has no attribute 'tzinfo'
+
+app/core/utils.py:20: AttributeError
+_______________________ test_create_session_overlap_fail _______________________
+
+client = <starlette.testclient.TestClient object at 0x7fb7a06ce8e0>
+test_space = <app.models.venues.Space object at 0x7fb7606266a0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTc3NjIsInN1YiI6ImFmMjczNzgzLTU4ODQtNGI...hOTQwYjg4ZSIsImp0aSI6IjFkZWQyYTI1LTYzNzQtNDlhYy1iOTEzLWFkODg2OGZmNzBjZiJ9.u17YZBTCMsy-FceERZMEk1IywiTbUkVILt45yYOPuyI'}
+
+    def test_create_session_overlap_fail(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # First create a valid event
+        start_time = datetime.now() + timedelta(days=3)
+        end_time = start_time + timedelta(hours=4)
+    
+        event_data = {
+            "title": "Base Event",
+            "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()]
+        }
+>       r = client.post(f"{settings.API_V1_STR}/events/", headers=organizer_token_headers, json=event_data)
+
+tests/api/v1/test_organizer_crud.py:92: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:226: in app
+    raw_response = await run_endpoint_function(
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:161: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/concurrency.py:39: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/to_thread.py:28: in run_sync
+    return await get_asynclib().run_sync_in_worker_thread(func, *args, cancellable=cancellable,
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:818: in run_sync_in_worker_thread
+    return await future
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:754: in run
+    result = context.run(func, *args)
+app/api/v1/endpoints/events.py:103: in create_event
+    validate_event_dates(start_time, end_time)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+start_time = '2026-02-19T21:54:22.645764'
+end_time = '2026-02-20T01:54:22.645764'
+
+    def validate_event_dates(start_time: datetime, end_time: datetime) -> None:
+        """
+        Validates that:
+        1. start_time is in the future
+        2. start_time is not 'today' (must be at least tomorrow)
+        3. end_time is after start_time
+        4. start_time and end_time are on the same day
+        """
+>       now = datetime.now(start_time.tzinfo)
+E       AttributeError: 'str' object has no attribute 'tzinfo'
+
+app/core/utils.py:20: AttributeError
+__________________________ test_create_session_valid ___________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb7a06ce8e0>
+test_space = <app.models.venues.Space object at 0x7fb7606266a0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTc3NjIsInN1YiI6ImFmMjczNzgzLTU4ODQtNGI...hOTQwYjg4ZSIsImp0aSI6IjFkZWQyYTI1LTYzNzQtNDlhYy1iOTEzLWFkODg2OGZmNzBjZiJ9.u17YZBTCMsy-FceERZMEk1IywiTbUkVILt45yYOPuyI'}
+
+    def test_create_session_valid(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # Create valid event
+        start_time = datetime.now() + timedelta(days=4)
+        end_time = start_time + timedelta(hours=4)
+    
+        event_data = {
+            "title": "Base Event 2",
+            "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()]
+        }
+>       r = client.post(f"{settings.API_V1_STR}/events/", headers=organizer_token_headers, json=event_data)
+
+tests/api/v1/test_organizer_crud.py:118: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:226: in app
+    raw_response = await run_endpoint_function(
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:161: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/concurrency.py:39: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/to_thread.py:28: in run_sync
+    return await get_asynclib().run_sync_in_worker_thread(func, *args, cancellable=cancellable,
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:818: in run_sync_in_worker_thread
+    return await future
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:754: in run
+    result = context.run(func, *args)
+app/api/v1/endpoints/events.py:103: in create_event
+    validate_event_dates(start_time, end_time)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+start_time = '2026-02-20T21:54:22.806774'
+end_time = '2026-02-21T01:54:22.806774'
+
+    def validate_event_dates(start_time: datetime, end_time: datetime) -> None:
+        """
+        Validates that:
+        1. start_time is in the future
+        2. start_time is not 'today' (must be at least tomorrow)
+        3. end_time is after start_time
+        4. start_time and end_time are on the same day
+        """
+>       now = datetime.now(start_time.tzinfo)
+E       AttributeError: 'str' object has no attribute 'tzinfo'
+
+app/core/utils.py:20: AttributeError
+=============================== warnings summary ===============================
+../../../../../../opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8
+  /opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+=========================== short test summary info ============================
+FAILED tests/api/v1/test_organizer_crud.py::test_create_event_valid - Attribu...
+FAILED tests/api/v1/test_organizer_crud.py::test_create_event_past_fail - Att...
+FAILED tests/api/v1/test_organizer_crud.py::test_create_event_today_fail - At...
+FAILED tests/api/v1/test_organizer_crud.py::test_create_session_overlap_fail
+FAILED tests/api/v1/test_organizer_crud.py::test_create_session_valid - Attri...
+==================== 5 failed, 1 passed, 1 warning in 2.11s ====================

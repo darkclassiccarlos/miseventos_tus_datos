@@ -1,0 +1,10 @@
+Seeding Organizers...
+Success: Created Organizer One (organizer1@tustados.com) with roles ['organizer']
+Success: Created Organizer Two (organizer2@tustados.com) with roles ['organizer']
+
+Seeding Customers...
+Success: Created Customer One (customer1@gmail.com) with roles ['customer']
+Success: Created Customer Two (customer2@gmail.com) with roles ['customer']
+Success: Created Customer Three (customer3@gmail.com) with roles ['customer']
+Success: Created Customer Four (customer4@gmail.com) with roles ['customer']
+Success: Created Customer Five (customer5@gmail.com) with roles ['customer']

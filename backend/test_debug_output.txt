@@ -1,0 +1,2747 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.8.8, pytest-6.2.3, py-1.10.0, pluggy-0.13.1
+rootdir: /Users/carlosbautista/Desktop/Escritorio - MacBook Pro de Carlos/TusTados/backend
+plugins: anyio-3.4.0
+collected 6 items
+
+tests/api/v1/test_events.py EEEEEE                                       [100%]
+
+==================================== ERRORS ====================================
+________________ ERROR at setup of test_create_event_organizer _________________
+
+self = <sqlalchemy.engine.base.Connection object at 0x7fe52881eee0>
+engine = Engine(postgresql://postgres:***@db:5432/app_test), connection = None
+_has_events = None, _allow_revalidate = True, _allow_autobegin = True
+
+    def __init__(
+        self,
+        engine: Engine,
+        connection: Optional[PoolProxiedConnection] = None,
+        _has_events: Optional[bool] = None,
+        _allow_revalidate: bool = True,
+        _allow_autobegin: bool = True,
+    ):
+        """Construct a new Connection."""
+        self.engine = engine
+        self.dialect = dialect = engine.dialect
+    
+        if connection is None:
+            try:
+>               self._dbapi_connection = engine.raw_connection()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = Engine(postgresql://postgres:***@db:5432/app_test)
+
+    def raw_connection(self) -> PoolProxiedConnection:
+        """Return a "raw" DBAPI connection from the connection pool.
+    
+        The returned object is a proxied version of the DBAPI
+        connection object used by the underlying driver in use.
+        The object will have all the same behavior as the real DBAPI
+        connection, except that its ``close()`` method will result in the
+        connection being returned to the pool, rather than being closed
+        for real.
+    
+        This method provides direct DBAPI connection access for
+        special situations when the API provided by
+        :class:`_engine.Connection`
+        is not needed.   When a :class:`_engine.Connection` object is already
+        present, the DBAPI connection is available using
+        the :attr:`_engine.Connection.connection` accessor.
+    
+        .. seealso::
+    
+            :ref:`dbapi_connections`
+    
+        """
+>       return self.pool.connect()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3309: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def connect(self) -> PoolProxiedConnection:
+        """Return a DBAPI connection from the pool.
+    
+        The connection is instrumented such that when its
+        ``close()`` method is called, the connection will be returned to
+        the pool.
+    
+        """
+>       return _ConnectionFairy._checkout(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:447: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionFairy'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+threadconns = None, fairy = None
+
+    @classmethod
+    def _checkout(
+        cls,
+        pool: Pool,
+        threadconns: Optional[threading.local] = None,
+        fairy: Optional[_ConnectionFairy] = None,
+    ) -> _ConnectionFairy:
+        if not fairy:
+>           fairy = _ConnectionRecord.checkout(pool)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:1264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionRecord'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    @classmethod
+    def checkout(cls, pool: Pool) -> _ConnectionFairy:
+        if TYPE_CHECKING:
+            rec = cast(_ConnectionRecord, pool._do_get())
+        else:
+>           rec = pool._do_get()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:711: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _do_get(self) -> ConnectionPoolEntry:
+        use_overflow = self._max_overflow > -1
+    
+        wait = use_overflow and self._overflow >= self._max_overflow
+        try:
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+                return self._create_connection()
+            except:
+                with util.safe_reraise():
+>                   self._dec_overflow()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe5288203a0>
+type_ = None, value = None, traceback = None
+
+    def __exit__(
+        self,
+        type_: Optional[Type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[types.TracebackType],
+    ) -> NoReturn:
+        assert self._exc_info is not None
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            assert exc_value is not None
+            self._exc_info = None  # remove potential circular references
+>           raise exc_value.with_traceback(exc_tb)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _do_get(self) -> ConnectionPoolEntry:
+        use_overflow = self._max_overflow > -1
+    
+        wait = use_overflow and self._overflow >= self._max_overflow
+        try:
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+>               return self._create_connection()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _create_connection(self) -> ConnectionPoolEntry:
+        """Called by subclasses to create a new ConnectionRecord."""
+    
+>       return _ConnectionRecord(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>, connect = True
+
+    def __init__(self, pool: Pool, connect: bool = True):
+        self.fresh = False
+        self.fairy_ref = None
+        self.starttime = 0
+        self.dbapi_connection = None
+    
+        self.__pool = pool
+        if connect:
+>           self.__connect()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:673: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def __connect(self) -> None:
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+            self.dbapi_connection = connection = pool._invoke_creator(self)
+            pool.logger.debug("Created new connection %r", connection)
+            self.fresh = True
+        except BaseException as e:
+            with util.safe_reraise():
+>               pool.logger.debug("Error on connect(): %s", e)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:900: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe528820430>
+type_ = None, value = None, traceback = None
+
+    def __exit__(
+        self,
+        type_: Optional[Type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[types.TracebackType],
+    ) -> NoReturn:
+        assert self._exc_info is not None
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            assert exc_value is not None
+            self._exc_info = None  # remove potential circular references
+>           raise exc_value.with_traceback(exc_tb)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def __connect(self) -> None:
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+>           self.dbapi_connection = connection = pool._invoke_creator(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:895: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection_record = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def connect(
+        connection_record: Optional[ConnectionPoolEntry] = None,
+    ) -> DBAPIConnection:
+        if dialect._has_events:
+            for fn in dialect.dispatch.do_connect:
+                connection = cast(
+                    DBAPIConnection,
+                    fn(dialect, connection_record, cargs, cparams),
+                )
+                if connection is not None:
+                    return connection
+    
+>       return dialect.connect(*cargs, **cparams)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/create.py:661: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7fe571aaf100>
+cargs = ()
+cparams = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+
+    def connect(self, *cargs: Any, **cparams: Any) -> DBAPIConnection:
+        # inherits the docstring from interfaces.Dialect.connect
+>       return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:630: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=db dbname=app_test user=postgres password=changethis port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E       psycopg2.OperationalError: could not translate host name "db" to address: nodename nor servname provided, or not known
+
+/opt/anaconda3/lib/python3.8/site-packages/psycopg2/__init__.py:122: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+    @pytest.fixture(scope="module")
+    def db() -> Generator:
+>       Base.metadata.create_all(bind=engine)
+
+tests/conftest.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/sql/schema.py:5928: in create_all
+    bind._run_ddl_visitor(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3259: in _run_ddl_visitor
+    with self.begin() as conn:
+/opt/anaconda3/lib/python3.8/contextlib.py:113: in __enter__
+    return next(self.gen)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3249: in begin
+    with self.connect() as conn:
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3285: in connect
+    return self._connection_cls(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:145: in __init__
+    Connection._handle_dbapi_exception_noconnection(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:2448: in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:143: in __init__
+    self._dbapi_connection = engine.raw_connection()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3309: in raw_connection
+    return self.pool.connect()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:447: in connect
+    return _ConnectionFairy._checkout(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:1264: in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:711: in checkout
+    rec = pool._do_get()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:178: in _do_get
+    self._dec_overflow()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:175: in _do_get
+    return self._create_connection()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:388: in _create_connection
+    return _ConnectionRecord(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:673: in __init__
+    self.__connect()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:900: in __connect
+    pool.logger.debug("Error on connect(): %s", e)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:895: in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/create.py:661: in connect
+    return dialect.connect(*cargs, **cparams)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:630: in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=db dbname=app_test user=postgres password=changethis port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E       sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) could not translate host name "db" to address: nodename nor servname provided, or not known
+E       
+E       (Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+/opt/anaconda3/lib/python3.8/site-packages/psycopg2/__init__.py:122: OperationalError
+__________________ ERROR at setup of test_create_event_admin ___________________
+
+self = <sqlalchemy.engine.base.Connection object at 0x7fe52881eee0>
+engine = Engine(postgresql://postgres:***@db:5432/app_test), connection = None
+_has_events = None, _allow_revalidate = True, _allow_autobegin = True
+
+    def __init__(
+        self,
+        engine: Engine,
+        connection: Optional[PoolProxiedConnection] = None,
+        _has_events: Optional[bool] = None,
+        _allow_revalidate: bool = True,
+        _allow_autobegin: bool = True,
+    ):
+        """Construct a new Connection."""
+        self.engine = engine
+        self.dialect = dialect = engine.dialect
+    
+        if connection is None:
+            try:
+>               self._dbapi_connection = engine.raw_connection()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = Engine(postgresql://postgres:***@db:5432/app_test)
+
+    def raw_connection(self) -> PoolProxiedConnection:
+        """Return a "raw" DBAPI connection from the connection pool.
+    
+        The returned object is a proxied version of the DBAPI
+        connection object used by the underlying driver in use.
+        The object will have all the same behavior as the real DBAPI
+        connection, except that its ``close()`` method will result in the
+        connection being returned to the pool, rather than being closed
+        for real.
+    
+        This method provides direct DBAPI connection access for
+        special situations when the API provided by
+        :class:`_engine.Connection`
+        is not needed.   When a :class:`_engine.Connection` object is already
+        present, the DBAPI connection is available using
+        the :attr:`_engine.Connection.connection` accessor.
+    
+        .. seealso::
+    
+            :ref:`dbapi_connections`
+    
+        """
+>       return self.pool.connect()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3309: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def connect(self) -> PoolProxiedConnection:
+        """Return a DBAPI connection from the pool.
+    
+        The connection is instrumented such that when its
+        ``close()`` method is called, the connection will be returned to
+        the pool.
+    
+        """
+>       return _ConnectionFairy._checkout(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:447: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionFairy'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+threadconns = None, fairy = None
+
+    @classmethod
+    def _checkout(
+        cls,
+        pool: Pool,
+        threadconns: Optional[threading.local] = None,
+        fairy: Optional[_ConnectionFairy] = None,
+    ) -> _ConnectionFairy:
+        if not fairy:
+>           fairy = _ConnectionRecord.checkout(pool)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:1264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionRecord'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    @classmethod
+    def checkout(cls, pool: Pool) -> _ConnectionFairy:
+        if TYPE_CHECKING:
+            rec = cast(_ConnectionRecord, pool._do_get())
+        else:
+>           rec = pool._do_get()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:711: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _do_get(self) -> ConnectionPoolEntry:
+        use_overflow = self._max_overflow > -1
+    
+        wait = use_overflow and self._overflow >= self._max_overflow
+        try:
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+                return self._create_connection()
+            except:
+                with util.safe_reraise():
+>                   self._dec_overflow()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe5288203a0>
+type_ = None, value = None, traceback = None
+
+    def __exit__(
+        self,
+        type_: Optional[Type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[types.TracebackType],
+    ) -> NoReturn:
+        assert self._exc_info is not None
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            assert exc_value is not None
+            self._exc_info = None  # remove potential circular references
+>           raise exc_value.with_traceback(exc_tb)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _do_get(self) -> ConnectionPoolEntry:
+        use_overflow = self._max_overflow > -1
+    
+        wait = use_overflow and self._overflow >= self._max_overflow
+        try:
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+>               return self._create_connection()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _create_connection(self) -> ConnectionPoolEntry:
+        """Called by subclasses to create a new ConnectionRecord."""
+    
+>       return _ConnectionRecord(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>, connect = True
+
+    def __init__(self, pool: Pool, connect: bool = True):
+        self.fresh = False
+        self.fairy_ref = None
+        self.starttime = 0
+        self.dbapi_connection = None
+    
+        self.__pool = pool
+        if connect:
+>           self.__connect()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:673: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def __connect(self) -> None:
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+            self.dbapi_connection = connection = pool._invoke_creator(self)
+            pool.logger.debug("Created new connection %r", connection)
+            self.fresh = True
+        except BaseException as e:
+            with util.safe_reraise():
+>               pool.logger.debug("Error on connect(): %s", e)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:900: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe528820430>
+type_ = None, value = None, traceback = None
+
+    def __exit__(
+        self,
+        type_: Optional[Type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[types.TracebackType],
+    ) -> NoReturn:
+        assert self._exc_info is not None
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            assert exc_value is not None
+            self._exc_info = None  # remove potential circular references
+>           raise exc_value.with_traceback(exc_tb)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def __connect(self) -> None:
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+>           self.dbapi_connection = connection = pool._invoke_creator(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:895: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection_record = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def connect(
+        connection_record: Optional[ConnectionPoolEntry] = None,
+    ) -> DBAPIConnection:
+        if dialect._has_events:
+            for fn in dialect.dispatch.do_connect:
+                connection = cast(
+                    DBAPIConnection,
+                    fn(dialect, connection_record, cargs, cparams),
+                )
+                if connection is not None:
+                    return connection
+    
+>       return dialect.connect(*cargs, **cparams)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/create.py:661: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7fe571aaf100>
+cargs = ()
+cparams = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+
+    def connect(self, *cargs: Any, **cparams: Any) -> DBAPIConnection:
+        # inherits the docstring from interfaces.Dialect.connect
+>       return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:630: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=db dbname=app_test user=postgres password=changethis port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E       psycopg2.OperationalError: could not translate host name "db" to address: nodename nor servname provided, or not known
+
+/opt/anaconda3/lib/python3.8/site-packages/psycopg2/__init__.py:122: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+    @pytest.fixture(scope="module")
+    def db() -> Generator:
+>       Base.metadata.create_all(bind=engine)
+
+tests/conftest.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/sql/schema.py:5928: in create_all
+    bind._run_ddl_visitor(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3259: in _run_ddl_visitor
+    with self.begin() as conn:
+/opt/anaconda3/lib/python3.8/contextlib.py:113: in __enter__
+    return next(self.gen)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3249: in begin
+    with self.connect() as conn:
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3285: in connect
+    return self._connection_cls(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:145: in __init__
+    Connection._handle_dbapi_exception_noconnection(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:2448: in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:143: in __init__
+    self._dbapi_connection = engine.raw_connection()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3309: in raw_connection
+    return self.pool.connect()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:447: in connect
+    return _ConnectionFairy._checkout(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:1264: in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:711: in checkout
+    rec = pool._do_get()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:178: in _do_get
+    self._dec_overflow()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:175: in _do_get
+    return self._create_connection()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:388: in _create_connection
+    return _ConnectionRecord(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:673: in __init__
+    self.__connect()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:900: in __connect
+    pool.logger.debug("Error on connect(): %s", e)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:895: in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/create.py:661: in connect
+    return dialect.connect(*cargs, **cparams)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:630: in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=db dbname=app_test user=postgres password=changethis port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E       sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) could not translate host name "db" to address: nodename nor servname provided, or not known
+E       
+E       (Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+/opt/anaconda3/lib/python3.8/site-packages/psycopg2/__init__.py:122: OperationalError
+______________________ ERROR at setup of test_read_events ______________________
+
+self = <sqlalchemy.engine.base.Connection object at 0x7fe52881eee0>
+engine = Engine(postgresql://postgres:***@db:5432/app_test), connection = None
+_has_events = None, _allow_revalidate = True, _allow_autobegin = True
+
+    def __init__(
+        self,
+        engine: Engine,
+        connection: Optional[PoolProxiedConnection] = None,
+        _has_events: Optional[bool] = None,
+        _allow_revalidate: bool = True,
+        _allow_autobegin: bool = True,
+    ):
+        """Construct a new Connection."""
+        self.engine = engine
+        self.dialect = dialect = engine.dialect
+    
+        if connection is None:
+            try:
+>               self._dbapi_connection = engine.raw_connection()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = Engine(postgresql://postgres:***@db:5432/app_test)
+
+    def raw_connection(self) -> PoolProxiedConnection:
+        """Return a "raw" DBAPI connection from the connection pool.
+    
+        The returned object is a proxied version of the DBAPI
+        connection object used by the underlying driver in use.
+        The object will have all the same behavior as the real DBAPI
+        connection, except that its ``close()`` method will result in the
+        connection being returned to the pool, rather than being closed
+        for real.
+    
+        This method provides direct DBAPI connection access for
+        special situations when the API provided by
+        :class:`_engine.Connection`
+        is not needed.   When a :class:`_engine.Connection` object is already
+        present, the DBAPI connection is available using
+        the :attr:`_engine.Connection.connection` accessor.
+    
+        .. seealso::
+    
+            :ref:`dbapi_connections`
+    
+        """
+>       return self.pool.connect()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3309: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def connect(self) -> PoolProxiedConnection:
+        """Return a DBAPI connection from the pool.
+    
+        The connection is instrumented such that when its
+        ``close()`` method is called, the connection will be returned to
+        the pool.
+    
+        """
+>       return _ConnectionFairy._checkout(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:447: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionFairy'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+threadconns = None, fairy = None
+
+    @classmethod
+    def _checkout(
+        cls,
+        pool: Pool,
+        threadconns: Optional[threading.local] = None,
+        fairy: Optional[_ConnectionFairy] = None,
+    ) -> _ConnectionFairy:
+        if not fairy:
+>           fairy = _ConnectionRecord.checkout(pool)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:1264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionRecord'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    @classmethod
+    def checkout(cls, pool: Pool) -> _ConnectionFairy:
+        if TYPE_CHECKING:
+            rec = cast(_ConnectionRecord, pool._do_get())
+        else:
+>           rec = pool._do_get()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:711: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _do_get(self) -> ConnectionPoolEntry:
+        use_overflow = self._max_overflow > -1
+    
+        wait = use_overflow and self._overflow >= self._max_overflow
+        try:
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+                return self._create_connection()
+            except:
+                with util.safe_reraise():
+>                   self._dec_overflow()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe5288203a0>
+type_ = None, value = None, traceback = None
+
+    def __exit__(
+        self,
+        type_: Optional[Type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[types.TracebackType],
+    ) -> NoReturn:
+        assert self._exc_info is not None
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            assert exc_value is not None
+            self._exc_info = None  # remove potential circular references
+>           raise exc_value.with_traceback(exc_tb)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _do_get(self) -> ConnectionPoolEntry:
+        use_overflow = self._max_overflow > -1
+    
+        wait = use_overflow and self._overflow >= self._max_overflow
+        try:
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+>               return self._create_connection()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _create_connection(self) -> ConnectionPoolEntry:
+        """Called by subclasses to create a new ConnectionRecord."""
+    
+>       return _ConnectionRecord(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>, connect = True
+
+    def __init__(self, pool: Pool, connect: bool = True):
+        self.fresh = False
+        self.fairy_ref = None
+        self.starttime = 0
+        self.dbapi_connection = None
+    
+        self.__pool = pool
+        if connect:
+>           self.__connect()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:673: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def __connect(self) -> None:
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+            self.dbapi_connection = connection = pool._invoke_creator(self)
+            pool.logger.debug("Created new connection %r", connection)
+            self.fresh = True
+        except BaseException as e:
+            with util.safe_reraise():
+>               pool.logger.debug("Error on connect(): %s", e)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:900: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe528820430>
+type_ = None, value = None, traceback = None
+
+    def __exit__(
+        self,
+        type_: Optional[Type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[types.TracebackType],
+    ) -> NoReturn:
+        assert self._exc_info is not None
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            assert exc_value is not None
+            self._exc_info = None  # remove potential circular references
+>           raise exc_value.with_traceback(exc_tb)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def __connect(self) -> None:
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+>           self.dbapi_connection = connection = pool._invoke_creator(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:895: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection_record = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def connect(
+        connection_record: Optional[ConnectionPoolEntry] = None,
+    ) -> DBAPIConnection:
+        if dialect._has_events:
+            for fn in dialect.dispatch.do_connect:
+                connection = cast(
+                    DBAPIConnection,
+                    fn(dialect, connection_record, cargs, cparams),
+                )
+                if connection is not None:
+                    return connection
+    
+>       return dialect.connect(*cargs, **cparams)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/create.py:661: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7fe571aaf100>
+cargs = ()
+cparams = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+
+    def connect(self, *cargs: Any, **cparams: Any) -> DBAPIConnection:
+        # inherits the docstring from interfaces.Dialect.connect
+>       return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:630: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=db dbname=app_test user=postgres password=changethis port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E       psycopg2.OperationalError: could not translate host name "db" to address: nodename nor servname provided, or not known
+
+/opt/anaconda3/lib/python3.8/site-packages/psycopg2/__init__.py:122: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+    @pytest.fixture(scope="module")
+    def db() -> Generator:
+>       Base.metadata.create_all(bind=engine)
+
+tests/conftest.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/sql/schema.py:5928: in create_all
+    bind._run_ddl_visitor(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3259: in _run_ddl_visitor
+    with self.begin() as conn:
+/opt/anaconda3/lib/python3.8/contextlib.py:113: in __enter__
+    return next(self.gen)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3249: in begin
+    with self.connect() as conn:
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3285: in connect
+    return self._connection_cls(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:145: in __init__
+    Connection._handle_dbapi_exception_noconnection(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:2448: in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:143: in __init__
+    self._dbapi_connection = engine.raw_connection()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3309: in raw_connection
+    return self.pool.connect()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:447: in connect
+    return _ConnectionFairy._checkout(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:1264: in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:711: in checkout
+    rec = pool._do_get()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:178: in _do_get
+    self._dec_overflow()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:175: in _do_get
+    return self._create_connection()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:388: in _create_connection
+    return _ConnectionRecord(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:673: in __init__
+    self.__connect()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:900: in __connect
+    pool.logger.debug("Error on connect(): %s", e)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:895: in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/create.py:661: in connect
+    return dialect.connect(*cargs, **cparams)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:630: in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=db dbname=app_test user=postgres password=changethis port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E       sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) could not translate host name "db" to address: nodename nor servname provided, or not known
+E       
+E       (Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+/opt/anaconda3/lib/python3.8/site-packages/psycopg2/__init__.py:122: OperationalError
+_____________________ ERROR at setup of test_update_event ______________________
+
+self = <sqlalchemy.engine.base.Connection object at 0x7fe52881eee0>
+engine = Engine(postgresql://postgres:***@db:5432/app_test), connection = None
+_has_events = None, _allow_revalidate = True, _allow_autobegin = True
+
+    def __init__(
+        self,
+        engine: Engine,
+        connection: Optional[PoolProxiedConnection] = None,
+        _has_events: Optional[bool] = None,
+        _allow_revalidate: bool = True,
+        _allow_autobegin: bool = True,
+    ):
+        """Construct a new Connection."""
+        self.engine = engine
+        self.dialect = dialect = engine.dialect
+    
+        if connection is None:
+            try:
+>               self._dbapi_connection = engine.raw_connection()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = Engine(postgresql://postgres:***@db:5432/app_test)
+
+    def raw_connection(self) -> PoolProxiedConnection:
+        """Return a "raw" DBAPI connection from the connection pool.
+    
+        The returned object is a proxied version of the DBAPI
+        connection object used by the underlying driver in use.
+        The object will have all the same behavior as the real DBAPI
+        connection, except that its ``close()`` method will result in the
+        connection being returned to the pool, rather than being closed
+        for real.
+    
+        This method provides direct DBAPI connection access for
+        special situations when the API provided by
+        :class:`_engine.Connection`
+        is not needed.   When a :class:`_engine.Connection` object is already
+        present, the DBAPI connection is available using
+        the :attr:`_engine.Connection.connection` accessor.
+    
+        .. seealso::
+    
+            :ref:`dbapi_connections`
+    
+        """
+>       return self.pool.connect()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3309: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def connect(self) -> PoolProxiedConnection:
+        """Return a DBAPI connection from the pool.
+    
+        The connection is instrumented such that when its
+        ``close()`` method is called, the connection will be returned to
+        the pool.
+    
+        """
+>       return _ConnectionFairy._checkout(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:447: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionFairy'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+threadconns = None, fairy = None
+
+    @classmethod
+    def _checkout(
+        cls,
+        pool: Pool,
+        threadconns: Optional[threading.local] = None,
+        fairy: Optional[_ConnectionFairy] = None,
+    ) -> _ConnectionFairy:
+        if not fairy:
+>           fairy = _ConnectionRecord.checkout(pool)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:1264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionRecord'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    @classmethod
+    def checkout(cls, pool: Pool) -> _ConnectionFairy:
+        if TYPE_CHECKING:
+            rec = cast(_ConnectionRecord, pool._do_get())
+        else:
+>           rec = pool._do_get()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:711: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _do_get(self) -> ConnectionPoolEntry:
+        use_overflow = self._max_overflow > -1
+    
+        wait = use_overflow and self._overflow >= self._max_overflow
+        try:
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+                return self._create_connection()
+            except:
+                with util.safe_reraise():
+>                   self._dec_overflow()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe5288203a0>
+type_ = None, value = None, traceback = None
+
+    def __exit__(
+        self,
+        type_: Optional[Type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[types.TracebackType],
+    ) -> NoReturn:
+        assert self._exc_info is not None
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            assert exc_value is not None
+            self._exc_info = None  # remove potential circular references
+>           raise exc_value.with_traceback(exc_tb)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _do_get(self) -> ConnectionPoolEntry:
+        use_overflow = self._max_overflow > -1
+    
+        wait = use_overflow and self._overflow >= self._max_overflow
+        try:
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+>               return self._create_connection()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _create_connection(self) -> ConnectionPoolEntry:
+        """Called by subclasses to create a new ConnectionRecord."""
+    
+>       return _ConnectionRecord(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>, connect = True
+
+    def __init__(self, pool: Pool, connect: bool = True):
+        self.fresh = False
+        self.fairy_ref = None
+        self.starttime = 0
+        self.dbapi_connection = None
+    
+        self.__pool = pool
+        if connect:
+>           self.__connect()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:673: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def __connect(self) -> None:
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+            self.dbapi_connection = connection = pool._invoke_creator(self)
+            pool.logger.debug("Created new connection %r", connection)
+            self.fresh = True
+        except BaseException as e:
+            with util.safe_reraise():
+>               pool.logger.debug("Error on connect(): %s", e)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:900: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe528820430>
+type_ = None, value = None, traceback = None
+
+    def __exit__(
+        self,
+        type_: Optional[Type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[types.TracebackType],
+    ) -> NoReturn:
+        assert self._exc_info is not None
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            assert exc_value is not None
+            self._exc_info = None  # remove potential circular references
+>           raise exc_value.with_traceback(exc_tb)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def __connect(self) -> None:
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+>           self.dbapi_connection = connection = pool._invoke_creator(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:895: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection_record = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def connect(
+        connection_record: Optional[ConnectionPoolEntry] = None,
+    ) -> DBAPIConnection:
+        if dialect._has_events:
+            for fn in dialect.dispatch.do_connect:
+                connection = cast(
+                    DBAPIConnection,
+                    fn(dialect, connection_record, cargs, cparams),
+                )
+                if connection is not None:
+                    return connection
+    
+>       return dialect.connect(*cargs, **cparams)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/create.py:661: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7fe571aaf100>
+cargs = ()
+cparams = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+
+    def connect(self, *cargs: Any, **cparams: Any) -> DBAPIConnection:
+        # inherits the docstring from interfaces.Dialect.connect
+>       return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:630: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=db dbname=app_test user=postgres password=changethis port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E       psycopg2.OperationalError: could not translate host name "db" to address: nodename nor servname provided, or not known
+
+/opt/anaconda3/lib/python3.8/site-packages/psycopg2/__init__.py:122: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+    @pytest.fixture(scope="module")
+    def db() -> Generator:
+>       Base.metadata.create_all(bind=engine)
+
+tests/conftest.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/sql/schema.py:5928: in create_all
+    bind._run_ddl_visitor(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3259: in _run_ddl_visitor
+    with self.begin() as conn:
+/opt/anaconda3/lib/python3.8/contextlib.py:113: in __enter__
+    return next(self.gen)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3249: in begin
+    with self.connect() as conn:
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3285: in connect
+    return self._connection_cls(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:145: in __init__
+    Connection._handle_dbapi_exception_noconnection(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:2448: in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:143: in __init__
+    self._dbapi_connection = engine.raw_connection()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3309: in raw_connection
+    return self.pool.connect()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:447: in connect
+    return _ConnectionFairy._checkout(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:1264: in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:711: in checkout
+    rec = pool._do_get()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:178: in _do_get
+    self._dec_overflow()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:175: in _do_get
+    return self._create_connection()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:388: in _create_connection
+    return _ConnectionRecord(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:673: in __init__
+    self.__connect()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:900: in __connect
+    pool.logger.debug("Error on connect(): %s", e)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:895: in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/create.py:661: in connect
+    return dialect.connect(*cargs, **cparams)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:630: in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=db dbname=app_test user=postgres password=changethis port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E       sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) could not translate host name "db" to address: nodename nor servname provided, or not known
+E       
+E       (Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+/opt/anaconda3/lib/python3.8/site-packages/psycopg2/__init__.py:122: OperationalError
+_____________________ ERROR at setup of test_delete_event ______________________
+
+self = <sqlalchemy.engine.base.Connection object at 0x7fe52881eee0>
+engine = Engine(postgresql://postgres:***@db:5432/app_test), connection = None
+_has_events = None, _allow_revalidate = True, _allow_autobegin = True
+
+    def __init__(
+        self,
+        engine: Engine,
+        connection: Optional[PoolProxiedConnection] = None,
+        _has_events: Optional[bool] = None,
+        _allow_revalidate: bool = True,
+        _allow_autobegin: bool = True,
+    ):
+        """Construct a new Connection."""
+        self.engine = engine
+        self.dialect = dialect = engine.dialect
+    
+        if connection is None:
+            try:
+>               self._dbapi_connection = engine.raw_connection()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = Engine(postgresql://postgres:***@db:5432/app_test)
+
+    def raw_connection(self) -> PoolProxiedConnection:
+        """Return a "raw" DBAPI connection from the connection pool.
+    
+        The returned object is a proxied version of the DBAPI
+        connection object used by the underlying driver in use.
+        The object will have all the same behavior as the real DBAPI
+        connection, except that its ``close()`` method will result in the
+        connection being returned to the pool, rather than being closed
+        for real.
+    
+        This method provides direct DBAPI connection access for
+        special situations when the API provided by
+        :class:`_engine.Connection`
+        is not needed.   When a :class:`_engine.Connection` object is already
+        present, the DBAPI connection is available using
+        the :attr:`_engine.Connection.connection` accessor.
+    
+        .. seealso::
+    
+            :ref:`dbapi_connections`
+    
+        """
+>       return self.pool.connect()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3309: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def connect(self) -> PoolProxiedConnection:
+        """Return a DBAPI connection from the pool.
+    
+        The connection is instrumented such that when its
+        ``close()`` method is called, the connection will be returned to
+        the pool.
+    
+        """
+>       return _ConnectionFairy._checkout(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:447: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionFairy'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+threadconns = None, fairy = None
+
+    @classmethod
+    def _checkout(
+        cls,
+        pool: Pool,
+        threadconns: Optional[threading.local] = None,
+        fairy: Optional[_ConnectionFairy] = None,
+    ) -> _ConnectionFairy:
+        if not fairy:
+>           fairy = _ConnectionRecord.checkout(pool)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:1264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionRecord'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    @classmethod
+    def checkout(cls, pool: Pool) -> _ConnectionFairy:
+        if TYPE_CHECKING:
+            rec = cast(_ConnectionRecord, pool._do_get())
+        else:
+>           rec = pool._do_get()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:711: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _do_get(self) -> ConnectionPoolEntry:
+        use_overflow = self._max_overflow > -1
+    
+        wait = use_overflow and self._overflow >= self._max_overflow
+        try:
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+                return self._create_connection()
+            except:
+                with util.safe_reraise():
+>                   self._dec_overflow()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe5288203a0>
+type_ = None, value = None, traceback = None
+
+    def __exit__(
+        self,
+        type_: Optional[Type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[types.TracebackType],
+    ) -> NoReturn:
+        assert self._exc_info is not None
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            assert exc_value is not None
+            self._exc_info = None  # remove potential circular references
+>           raise exc_value.with_traceback(exc_tb)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _do_get(self) -> ConnectionPoolEntry:
+        use_overflow = self._max_overflow > -1
+    
+        wait = use_overflow and self._overflow >= self._max_overflow
+        try:
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+>               return self._create_connection()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _create_connection(self) -> ConnectionPoolEntry:
+        """Called by subclasses to create a new ConnectionRecord."""
+    
+>       return _ConnectionRecord(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>, connect = True
+
+    def __init__(self, pool: Pool, connect: bool = True):
+        self.fresh = False
+        self.fairy_ref = None
+        self.starttime = 0
+        self.dbapi_connection = None
+    
+        self.__pool = pool
+        if connect:
+>           self.__connect()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:673: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def __connect(self) -> None:
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+            self.dbapi_connection = connection = pool._invoke_creator(self)
+            pool.logger.debug("Created new connection %r", connection)
+            self.fresh = True
+        except BaseException as e:
+            with util.safe_reraise():
+>               pool.logger.debug("Error on connect(): %s", e)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:900: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe528820430>
+type_ = None, value = None, traceback = None
+
+    def __exit__(
+        self,
+        type_: Optional[Type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[types.TracebackType],
+    ) -> NoReturn:
+        assert self._exc_info is not None
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            assert exc_value is not None
+            self._exc_info = None  # remove potential circular references
+>           raise exc_value.with_traceback(exc_tb)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def __connect(self) -> None:
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+>           self.dbapi_connection = connection = pool._invoke_creator(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:895: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection_record = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def connect(
+        connection_record: Optional[ConnectionPoolEntry] = None,
+    ) -> DBAPIConnection:
+        if dialect._has_events:
+            for fn in dialect.dispatch.do_connect:
+                connection = cast(
+                    DBAPIConnection,
+                    fn(dialect, connection_record, cargs, cparams),
+                )
+                if connection is not None:
+                    return connection
+    
+>       return dialect.connect(*cargs, **cparams)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/create.py:661: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7fe571aaf100>
+cargs = ()
+cparams = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+
+    def connect(self, *cargs: Any, **cparams: Any) -> DBAPIConnection:
+        # inherits the docstring from interfaces.Dialect.connect
+>       return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:630: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=db dbname=app_test user=postgres password=changethis port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E       psycopg2.OperationalError: could not translate host name "db" to address: nodename nor servname provided, or not known
+
+/opt/anaconda3/lib/python3.8/site-packages/psycopg2/__init__.py:122: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+    @pytest.fixture(scope="module")
+    def db() -> Generator:
+>       Base.metadata.create_all(bind=engine)
+
+tests/conftest.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/sql/schema.py:5928: in create_all
+    bind._run_ddl_visitor(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3259: in _run_ddl_visitor
+    with self.begin() as conn:
+/opt/anaconda3/lib/python3.8/contextlib.py:113: in __enter__
+    return next(self.gen)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3249: in begin
+    with self.connect() as conn:
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3285: in connect
+    return self._connection_cls(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:145: in __init__
+    Connection._handle_dbapi_exception_noconnection(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:2448: in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:143: in __init__
+    self._dbapi_connection = engine.raw_connection()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3309: in raw_connection
+    return self.pool.connect()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:447: in connect
+    return _ConnectionFairy._checkout(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:1264: in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:711: in checkout
+    rec = pool._do_get()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:178: in _do_get
+    self._dec_overflow()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:175: in _do_get
+    return self._create_connection()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:388: in _create_connection
+    return _ConnectionRecord(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:673: in __init__
+    self.__connect()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:900: in __connect
+    pool.logger.debug("Error on connect(): %s", e)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:895: in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/create.py:661: in connect
+    return dialect.connect(*cargs, **cparams)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:630: in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=db dbname=app_test user=postgres password=changethis port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E       sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) could not translate host name "db" to address: nodename nor servname provided, or not known
+E       
+E       (Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+/opt/anaconda3/lib/python3.8/site-packages/psycopg2/__init__.py:122: OperationalError
+_______________ ERROR at setup of test_create_event_unauthorized _______________
+
+self = <sqlalchemy.engine.base.Connection object at 0x7fe52881eee0>
+engine = Engine(postgresql://postgres:***@db:5432/app_test), connection = None
+_has_events = None, _allow_revalidate = True, _allow_autobegin = True
+
+    def __init__(
+        self,
+        engine: Engine,
+        connection: Optional[PoolProxiedConnection] = None,
+        _has_events: Optional[bool] = None,
+        _allow_revalidate: bool = True,
+        _allow_autobegin: bool = True,
+    ):
+        """Construct a new Connection."""
+        self.engine = engine
+        self.dialect = dialect = engine.dialect
+    
+        if connection is None:
+            try:
+>               self._dbapi_connection = engine.raw_connection()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = Engine(postgresql://postgres:***@db:5432/app_test)
+
+    def raw_connection(self) -> PoolProxiedConnection:
+        """Return a "raw" DBAPI connection from the connection pool.
+    
+        The returned object is a proxied version of the DBAPI
+        connection object used by the underlying driver in use.
+        The object will have all the same behavior as the real DBAPI
+        connection, except that its ``close()`` method will result in the
+        connection being returned to the pool, rather than being closed
+        for real.
+    
+        This method provides direct DBAPI connection access for
+        special situations when the API provided by
+        :class:`_engine.Connection`
+        is not needed.   When a :class:`_engine.Connection` object is already
+        present, the DBAPI connection is available using
+        the :attr:`_engine.Connection.connection` accessor.
+    
+        .. seealso::
+    
+            :ref:`dbapi_connections`
+    
+        """
+>       return self.pool.connect()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3309: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def connect(self) -> PoolProxiedConnection:
+        """Return a DBAPI connection from the pool.
+    
+        The connection is instrumented such that when its
+        ``close()`` method is called, the connection will be returned to
+        the pool.
+    
+        """
+>       return _ConnectionFairy._checkout(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:447: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionFairy'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+threadconns = None, fairy = None
+
+    @classmethod
+    def _checkout(
+        cls,
+        pool: Pool,
+        threadconns: Optional[threading.local] = None,
+        fairy: Optional[_ConnectionFairy] = None,
+    ) -> _ConnectionFairy:
+        if not fairy:
+>           fairy = _ConnectionRecord.checkout(pool)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:1264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionRecord'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    @classmethod
+    def checkout(cls, pool: Pool) -> _ConnectionFairy:
+        if TYPE_CHECKING:
+            rec = cast(_ConnectionRecord, pool._do_get())
+        else:
+>           rec = pool._do_get()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:711: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _do_get(self) -> ConnectionPoolEntry:
+        use_overflow = self._max_overflow > -1
+    
+        wait = use_overflow and self._overflow >= self._max_overflow
+        try:
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+                return self._create_connection()
+            except:
+                with util.safe_reraise():
+>                   self._dec_overflow()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe5288203a0>
+type_ = None, value = None, traceback = None
+
+    def __exit__(
+        self,
+        type_: Optional[Type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[types.TracebackType],
+    ) -> NoReturn:
+        assert self._exc_info is not None
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            assert exc_value is not None
+            self._exc_info = None  # remove potential circular references
+>           raise exc_value.with_traceback(exc_tb)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _do_get(self) -> ConnectionPoolEntry:
+        use_overflow = self._max_overflow > -1
+    
+        wait = use_overflow and self._overflow >= self._max_overflow
+        try:
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+>               return self._create_connection()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>
+
+    def _create_connection(self) -> ConnectionPoolEntry:
+        """Called by subclasses to create a new ConnectionRecord."""
+    
+>       return _ConnectionRecord(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe571aaf1c0>, connect = True
+
+    def __init__(self, pool: Pool, connect: bool = True):
+        self.fresh = False
+        self.fairy_ref = None
+        self.starttime = 0
+        self.dbapi_connection = None
+    
+        self.__pool = pool
+        if connect:
+>           self.__connect()
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:673: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def __connect(self) -> None:
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+            self.dbapi_connection = connection = pool._invoke_creator(self)
+            pool.logger.debug("Created new connection %r", connection)
+            self.fresh = True
+        except BaseException as e:
+            with util.safe_reraise():
+>               pool.logger.debug("Error on connect(): %s", e)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:900: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe528820430>
+type_ = None, value = None, traceback = None
+
+    def __exit__(
+        self,
+        type_: Optional[Type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[types.TracebackType],
+    ) -> NoReturn:
+        assert self._exc_info is not None
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            assert exc_value is not None
+            self._exc_info = None  # remove potential circular references
+>           raise exc_value.with_traceback(exc_tb)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def __connect(self) -> None:
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+>           self.dbapi_connection = connection = pool._invoke_creator(self)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:895: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection_record = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe5287f8100>
+
+    def connect(
+        connection_record: Optional[ConnectionPoolEntry] = None,
+    ) -> DBAPIConnection:
+        if dialect._has_events:
+            for fn in dialect.dispatch.do_connect:
+                connection = cast(
+                    DBAPIConnection,
+                    fn(dialect, connection_record, cargs, cparams),
+                )
+                if connection is not None:
+                    return connection
+    
+>       return dialect.connect(*cargs, **cparams)
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/create.py:661: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7fe571aaf100>
+cargs = ()
+cparams = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+
+    def connect(self, *cargs: Any, **cparams: Any) -> DBAPIConnection:
+        # inherits the docstring from interfaces.Dialect.connect
+>       return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:630: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=db dbname=app_test user=postgres password=changethis port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E       psycopg2.OperationalError: could not translate host name "db" to address: nodename nor servname provided, or not known
+
+/opt/anaconda3/lib/python3.8/site-packages/psycopg2/__init__.py:122: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+    @pytest.fixture(scope="module")
+    def db() -> Generator:
+>       Base.metadata.create_all(bind=engine)
+
+tests/conftest.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/sql/schema.py:5928: in create_all
+    bind._run_ddl_visitor(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3259: in _run_ddl_visitor
+    with self.begin() as conn:
+/opt/anaconda3/lib/python3.8/contextlib.py:113: in __enter__
+    return next(self.gen)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3249: in begin
+    with self.connect() as conn:
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3285: in connect
+    return self._connection_cls(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:145: in __init__
+    Connection._handle_dbapi_exception_noconnection(
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:2448: in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:143: in __init__
+    self._dbapi_connection = engine.raw_connection()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/base.py:3309: in raw_connection
+    return self.pool.connect()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:447: in connect
+    return _ConnectionFairy._checkout(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:1264: in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:711: in checkout
+    rec = pool._do_get()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:178: in _do_get
+    self._dec_overflow()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/impl.py:175: in _do_get
+    return self._create_connection()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:388: in _create_connection
+    return _ConnectionRecord(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:673: in __init__
+    self.__connect()
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:900: in __connect
+    pool.logger.debug("Error on connect(): %s", e)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/pool/base.py:895: in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/create.py:661: in connect
+    return dialect.connect(*cargs, **cparams)
+/opt/anaconda3/lib/python3.8/site-packages/sqlalchemy/engine/default.py:630: in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=db dbname=app_test user=postgres password=changethis port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'app_test', 'host': 'db', 'password': 'changethis', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E       sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) could not translate host name "db" to address: nodename nor servname provided, or not known
+E       
+E       (Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+/opt/anaconda3/lib/python3.8/site-packages/psycopg2/__init__.py:122: OperationalError
+=============================== warnings summary ===============================
+../../../../../../opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8
+  /opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+=========================== short test summary info ============================
+ERROR tests/api/v1/test_events.py::test_create_event_organizer - sqlalchemy.e...
+ERROR tests/api/v1/test_events.py::test_create_event_admin - sqlalchemy.exc.O...
+ERROR tests/api/v1/test_events.py::test_read_events - sqlalchemy.exc.Operatio...
+ERROR tests/api/v1/test_events.py::test_update_event - sqlalchemy.exc.Operati...
+ERROR tests/api/v1/test_events.py::test_delete_event - sqlalchemy.exc.Operati...
+ERROR tests/api/v1/test_events.py::test_create_event_unauthorized - sqlalchem...
+========================= 1 warning, 6 errors in 1.92s =========================

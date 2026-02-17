@@ -1,0 +1,91 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.8.8, pytest-6.2.3, py-1.10.0, pluggy-0.13.1
+rootdir: /Users/carlosbautista/Desktop/Escritorio - MacBook Pro de Carlos/TusTados/backend
+plugins: anyio-3.4.0
+collected 6 items
+
+tests/api/v1/test_organizer_crud.py .F..FF                               [100%]
+
+=================================== FAILURES ===================================
+___________________________ test_create_event_valid ____________________________
+
+client = <starlette.testclient.TestClient object at 0x7fa21022c4f0>
+test_space = <app.models.venues.Space object at 0x7fa22a05bac0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTgyMjMsInN1YiI6Ijg1YjM1ZWM3LTIyMTAtNDA...xMTRhMTdkNiIsImp0aSI6ImMyNmI2YTk4LTc3NDItNGRkMy04Zjc3LWI1MmYyZDgyMjBhNCJ9.0GCJyugSNyhOEKuU3rpFjO3L_VDmmRd4aOe5y6VQTdQ'}
+
+    def test_create_event_valid(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # Schedule for 2 days from now
+        start_time = datetime.now() + timedelta(days=2)
+        end_time = start_time + timedelta(hours=2)
+    
+        data = {
+            "title": "Valid Event",
+            "description": "This is a valid event",
+            "status": "published",
+            "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()],
+            "capacity": 20
+        }
+    
+        r = client.post(f"{settings.API_V1_STR}/events/", headers=organizer_token_headers, json=data)
+>       assert r.status_code == 200, r.text
+E       AssertionError: {"detail":"Events must start and end on the same day"}
+E       assert 400 == 200
+E        +  where 400 = <Response [400]>.status_code
+
+tests/api/v1/test_organizer_crud.py:47: AssertionError
+_______________________ test_create_session_overlap_fail _______________________
+
+client = <starlette.testclient.TestClient object at 0x7fa21022c4f0>
+test_space = <app.models.venues.Space object at 0x7fa22a05bac0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTgyMjMsInN1YiI6Ijg1YjM1ZWM3LTIyMTAtNDA...xMTRhMTdkNiIsImp0aSI6ImMyNmI2YTk4LTc3NDItNGRkMy04Zjc3LWI1MmYyZDgyMjBhNCJ9.0GCJyugSNyhOEKuU3rpFjO3L_VDmmRd4aOe5y6VQTdQ'}
+
+    def test_create_session_overlap_fail(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # First create a valid event
+        start_time = datetime.now() + timedelta(days=3)
+        end_time = start_time + timedelta(hours=4)
+    
+        event_data = {
+            "title": "Base Event",
+            "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()]
+        }
+        r = client.post(f"{settings.API_V1_STR}/events/", headers=organizer_token_headers, json=event_data)
+>       assert r.status_code == 200
+E       assert 400 == 200
+E        +  where 400 = <Response [400]>.status_code
+
+tests/api/v1/test_organizer_crud.py:93: AssertionError
+__________________________ test_create_session_valid ___________________________
+
+client = <starlette.testclient.TestClient object at 0x7fa21022c4f0>
+test_space = <app.models.venues.Space object at 0x7fa22a05bac0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTgyMjMsInN1YiI6Ijg1YjM1ZWM3LTIyMTAtNDA...xMTRhMTdkNiIsImp0aSI6ImMyNmI2YTk4LTc3NDItNGRkMy04Zjc3LWI1MmYyZDgyMjBhNCJ9.0GCJyugSNyhOEKuU3rpFjO3L_VDmmRd4aOe5y6VQTdQ'}
+
+    def test_create_session_valid(client: TestClient, test_space: Space, organizer_token_headers: dict):
+        # Create valid event
+        start_time = datetime.now() + timedelta(days=4)
+        end_time = start_time + timedelta(hours=4)
+    
+        event_data = {
+            "title": "Base Event 2",
+            "space_id": str(test_space.id),
+            "time_range": [start_time.isoformat(), end_time.isoformat()]
+        }
+        r = client.post(f"{settings.API_V1_STR}/events/", headers=organizer_token_headers, json=event_data)
+>       assert r.status_code == 200
+E       assert 400 == 200
+E        +  where 400 = <Response [400]>.status_code
+
+tests/api/v1/test_organizer_crud.py:119: AssertionError
+=============================== warnings summary ===============================
+../../../../../../opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8
+  /opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+=========================== short test summary info ============================
+FAILED tests/api/v1/test_organizer_crud.py::test_create_event_valid - Asserti...
+FAILED tests/api/v1/test_organizer_crud.py::test_create_session_overlap_fail
+FAILED tests/api/v1/test_organizer_crud.py::test_create_session_valid - asser...
+==================== 3 failed, 3 passed, 1 warning in 1.33s ====================

@@ -1,0 +1,1309 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.8.8, pytest-6.2.3, py-1.10.0, pluggy-0.13.1
+rootdir: /Users/carlosbautista/Desktop/Escritorio - MacBook Pro de Carlos/TusTados/backend
+plugins: anyio-3.4.0
+collected 26 items
+
+tests/test_env_debug.py .                                                [  3%]
+tests/test_idempotency.py FF.                                            [ 15%]
+tests/test_main.py ..                                                    [ 23%]
+tests/api/v1/test_events.py FFFFF.                                       [ 46%]
+tests/api/v1/test_login.py ....                                          [ 61%]
+tests/api/v1/test_registrations.py FFFF                                  [ 76%]
+tests/api/v1/test_users.py ...F..                                        [100%]
+
+=================================== FAILURES ===================================
+___________________________ test_idempotency_caching ___________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb0e194a490>
+admin_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTY5NTIsInN1YiI6IjBkZjJkY2E5LWE4MWYtNDE...jZjBiOTIzYSIsImp0aSI6IjhlOTE0NGIyLTE3N2ItNGNkMy1hZDVmLTY3ZGNkYTE1ODAyMCJ9.5uPaA22Ne85M-FV3LYoI5ARt5azZ3YoaQsBoCVqOxXU'}
+
+    def test_idempotency_caching(client: TestClient, admin_token_headers: dict):
+        # Use a unique request ID
+        request_id = str(uuid.uuid4())
+        headers = {**admin_token_headers, "X-Request-ID": request_id}
+    
+        # Create an event
+        data = {"title": "Idempotent Event"}
+    
+        # First request
+>       response1 = client.post(
+            f"{settings.API_V1_STR}/events/",
+            json=data,
+            headers=headers
+        )
+
+tests/test_idempotency.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:234: in app
+    response_data = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            response_content = _prepare_response_content(
+                response_content,
+                exclude_unset=exclude_unset,
+                exclude_defaults=exclude_defaults,
+                exclude_none=exclude_none,
+            )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, ErrorWrapper):
+                errors.append(errors_)
+            elif isinstance(errors_, list):
+                errors.extend(errors_)
+            if errors:
+>               raise ValidationError(errors, field.type_)
+E               pydantic.error_wrappers.ValidationError: 1 validation error for Event
+E               response
+E                 value is not a valid dict (type=type_error.dict)
+
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:137: ValidationError
+__________________ test_idempotency_no_header_normal_behavior __________________
+
+client = <starlette.testclient.TestClient object at 0x7fb0e194a490>
+admin_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTY5NTIsInN1YiI6IjBkZjJkY2E5LWE4MWYtNDE...jZjBiOTIzYSIsImp0aSI6IjhlOTE0NGIyLTE3N2ItNGNkMy1hZDVmLTY3ZGNkYTE1ODAyMCJ9.5uPaA22Ne85M-FV3LYoI5ARt5azZ3YoaQsBoCVqOxXU'}
+
+    def test_idempotency_no_header_normal_behavior(client: TestClient, admin_token_headers: dict):
+        data = {"title": "Normal Event 1"}
+>       resp1 = client.post(f"{settings.API_V1_STR}/events/", json=data, headers=admin_token_headers)
+
+tests/test_idempotency.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:234: in app
+    response_data = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            response_content = _prepare_response_content(
+                response_content,
+                exclude_unset=exclude_unset,
+                exclude_defaults=exclude_defaults,
+                exclude_none=exclude_none,
+            )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, ErrorWrapper):
+                errors.append(errors_)
+            elif isinstance(errors_, list):
+                errors.extend(errors_)
+            if errors:
+>               raise ValidationError(errors, field.type_)
+E               pydantic.error_wrappers.ValidationError: 1 validation error for Event
+E               response
+E                 value is not a valid dict (type=type_error.dict)
+
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:137: ValidationError
+_________________________ test_create_event_organizer __________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb0c08de1c0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTY5NTQsInN1YiI6ImFiM2M2NmM4LTE5YmUtNGM...wZGQ0MzZiZiIsImp0aSI6IjEyNTFiMTQzLTMzMjgtNDMxYy1hM2IzLWQ1NjFjYmU1ZjU1NiJ9.w-1m5TDYsR8okPKQVlk-XNQkiqS6ezYdRbYVik62GH8'}
+
+    def test_create_event_organizer(client: TestClient, organizer_token_headers: dict):
+        data = {
+            "title": "Organizer Event",
+            "description": "Created by an organizer",
+            "status": "draft"
+        }
+>       response = client.post(
+            f"{settings.API_V1_STR}/events/",
+            json=data,
+            headers=organizer_token_headers,
+        )
+
+tests/api/v1/test_events.py:11: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:234: in app
+    response_data = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            response_content = _prepare_response_content(
+                response_content,
+                exclude_unset=exclude_unset,
+                exclude_defaults=exclude_defaults,
+                exclude_none=exclude_none,
+            )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, ErrorWrapper):
+                errors.append(errors_)
+            elif isinstance(errors_, list):
+                errors.extend(errors_)
+            if errors:
+>               raise ValidationError(errors, field.type_)
+E               pydantic.error_wrappers.ValidationError: 1 validation error for Event
+E               response
+E                 value is not a valid dict (type=type_error.dict)
+
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:137: ValidationError
+___________________________ test_create_event_admin ____________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb0c08de1c0>
+admin_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTY5NTQsInN1YiI6IjdhODBjZGE4LTRkZDctNDl...1NjVkZDQxYiIsImp0aSI6IjUzNzZjZDQ4LTc1MDYtNDQ4Ni05ZDk4LTAzNGNjM2RhOGUyOCJ9.EFEGPRTTkp0RStMAnQ7oPiXwjQaJ9KKt__kUqdhXVUQ'}
+
+    def test_create_event_admin(client: TestClient, admin_token_headers: dict):
+        data = {
+            "title": "Admin Event",
+            "description": "Created by an admin",
+            "status": "published"
+        }
+>       response = client.post(
+            f"{settings.API_V1_STR}/events/",
+            json=data,
+            headers=admin_token_headers,
+        )
+
+tests/api/v1/test_events.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:234: in app
+    response_data = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            response_content = _prepare_response_content(
+                response_content,
+                exclude_unset=exclude_unset,
+                exclude_defaults=exclude_defaults,
+                exclude_none=exclude_none,
+            )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, ErrorWrapper):
+                errors.append(errors_)
+            elif isinstance(errors_, list):
+                errors.extend(errors_)
+            if errors:
+>               raise ValidationError(errors, field.type_)
+E               pydantic.error_wrappers.ValidationError: 1 validation error for Event
+E               response
+E                 value is not a valid dict (type=type_error.dict)
+
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:137: ValidationError
+_______________________________ test_read_events _______________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb0c08de1c0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTY5NTQsInN1YiI6ImFiM2M2NmM4LTE5YmUtNGM...wZGQ0MzZiZiIsImp0aSI6IjEyNTFiMTQzLTMzMjgtNDMxYy1hM2IzLWQ1NjFjYmU1ZjU1NiJ9.w-1m5TDYsR8okPKQVlk-XNQkiqS6ezYdRbYVik62GH8'}
+
+    def test_read_events(client: TestClient, organizer_token_headers: dict):
+>       response = client.get(
+            f"{settings.API_V1_STR}/events/",
+            headers=organizer_token_headers,
+        )
+
+tests/api/v1/test_events.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:555: in get
+    return self.request('GET', url, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:234: in app
+    response_data = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            response_content = _prepare_response_content(
+                response_content,
+                exclude_unset=exclude_unset,
+                exclude_defaults=exclude_defaults,
+                exclude_none=exclude_none,
+            )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, ErrorWrapper):
+                errors.append(errors_)
+            elif isinstance(errors_, list):
+                errors.extend(errors_)
+            if errors:
+>               raise ValidationError(errors, field.type_)
+E               pydantic.error_wrappers.ValidationError: 1 validation error for EventPagination
+E               response -> items -> 0
+E                 value is not a valid dict (type=type_error.dict)
+
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:137: ValidationError
+______________________________ test_update_event _______________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb0c08de1c0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTY5NTQsInN1YiI6ImFiM2M2NmM4LTE5YmUtNGM...wZGQ0MzZiZiIsImp0aSI6IjEyNTFiMTQzLTMzMjgtNDMxYy1hM2IzLWQ1NjFjYmU1ZjU1NiJ9.w-1m5TDYsR8okPKQVlk-XNQkiqS6ezYdRbYVik62GH8'}
+
+    def test_update_event(client: TestClient, organizer_token_headers: dict):
+        # First create
+        create_data = {"title": "To be updated", "status": "draft"}
+>       create_resp = client.post(
+            f"{settings.API_V1_STR}/events/",
+            json=create_data,
+            headers=organizer_token_headers,
+        )
+
+tests/api/v1/test_events.py:49: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:234: in app
+    response_data = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            response_content = _prepare_response_content(
+                response_content,
+                exclude_unset=exclude_unset,
+                exclude_defaults=exclude_defaults,
+                exclude_none=exclude_none,
+            )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, ErrorWrapper):
+                errors.append(errors_)
+            elif isinstance(errors_, list):
+                errors.extend(errors_)
+            if errors:
+>               raise ValidationError(errors, field.type_)
+E               pydantic.error_wrappers.ValidationError: 1 validation error for Event
+E               response
+E                 value is not a valid dict (type=type_error.dict)
+
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:137: ValidationError
+______________________________ test_delete_event _______________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb0c08de1c0>
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTY5NTQsInN1YiI6ImFiM2M2NmM4LTE5YmUtNGM...wZGQ0MzZiZiIsImp0aSI6IjEyNTFiMTQzLTMzMjgtNDMxYy1hM2IzLWQ1NjFjYmU1ZjU1NiJ9.w-1m5TDYsR8okPKQVlk-XNQkiqS6ezYdRbYVik62GH8'}
+
+    def test_delete_event(client: TestClient, organizer_token_headers: dict):
+        # First create
+        create_data = {"title": "To be deleted"}
+>       create_resp = client.post(
+            f"{settings.API_V1_STR}/events/",
+            json=create_data,
+            headers=organizer_token_headers,
+        )
+
+tests/api/v1/test_events.py:69: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:234: in app
+    response_data = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            response_content = _prepare_response_content(
+                response_content,
+                exclude_unset=exclude_unset,
+                exclude_defaults=exclude_defaults,
+                exclude_none=exclude_none,
+            )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, ErrorWrapper):
+                errors.append(errors_)
+            elif isinstance(errors_, list):
+                errors.extend(errors_)
+            if errors:
+>               raise ValidationError(errors, field.type_)
+E               pydantic.error_wrappers.ValidationError: 1 validation error for Event
+E               response
+E                 value is not a valid dict (type=type_error.dict)
+
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:137: ValidationError
+_______________________ test_register_for_event_success ________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb0c0933df0>
+db = <sqlalchemy.orm.session.Session object at 0x7fb0c0933760>
+admin_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTY5NTcsInN1YiI6IjA0OTliMGVlLTZiNDgtNDI...zNmNkYmJlZSIsImp0aSI6ImE4M2FmZmI3LTk3Y2YtNDQzNy04NzI4LWIwYWUwYTVlMmRhMCJ9.LpySK69CtvwY_4a-bE_Pp1yxw6cjvChAd7zzZpUJTAY'}
+organizer_user = <app.models.users.User object at 0x7fb0c0933160>
+
+    def test_register_for_event_success(client: TestClient, db, admin_token_headers: dict, organizer_user):
+        # 1. Create a published event
+        event = EventModel(
+            title="Registration Test Event",
+            status=EventStatus.PUBLISHED.value,
+            organizer_id=organizer_user.id,
+            capacity=10
+        )
+        db.add(event)
+        db.commit()
+        db.refresh(event)
+    
+        # 2. Register
+>       response = client.post(
+            f"{settings.API_V1_STR}/events/{event.id}/register",
+            headers=admin_token_headers
+        )
+
+tests/api/v1/test_registrations.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:234: in app
+    response_data = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            response_content = _prepare_response_content(
+                response_content,
+                exclude_unset=exclude_unset,
+                exclude_defaults=exclude_defaults,
+                exclude_none=exclude_none,
+            )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, ErrorWrapper):
+                errors.append(errors_)
+            elif isinstance(errors_, list):
+                errors.extend(errors_)
+            if errors:
+>               raise ValidationError(errors, field.type_)
+E               pydantic.error_wrappers.ValidationError: 1 validation error for Registration
+E               response
+E                 value is not a valid dict (type=type_error.dict)
+
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:137: ValidationError
+_________________________ test_register_duplicate_fail _________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb0c0933df0>
+db = <sqlalchemy.orm.session.Session object at 0x7fb0c0933760>
+admin_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTY5NTcsInN1YiI6IjA0OTliMGVlLTZiNDgtNDI...zNmNkYmJlZSIsImp0aSI6ImE4M2FmZmI3LTk3Y2YtNDQzNy04NzI4LWIwYWUwYTVlMmRhMCJ9.LpySK69CtvwY_4a-bE_Pp1yxw6cjvChAd7zzZpUJTAY'}
+organizer_user = <app.models.users.User object at 0x7fb0c0933160>
+
+    def test_register_duplicate_fail(client: TestClient, db, admin_token_headers: dict, organizer_user):
+        # Create event
+        event = EventModel(
+            title="Duplicate Test",
+            status=EventStatus.PUBLISHED.value,
+            organizer_id=organizer_user.id
+        )
+        db.add(event)
+        db.commit()
+        db.refresh(event)
+    
+        # Register once
+>       client.post(f"{settings.API_V1_STR}/events/{event.id}/register", headers=admin_token_headers)
+
+tests/api/v1/test_registrations.py:38: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:234: in app
+    response_data = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            response_content = _prepare_response_content(
+                response_content,
+                exclude_unset=exclude_unset,
+                exclude_defaults=exclude_defaults,
+                exclude_none=exclude_none,
+            )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, ErrorWrapper):
+                errors.append(errors_)
+            elif isinstance(errors_, list):
+                errors.extend(errors_)
+            if errors:
+>               raise ValidationError(errors, field.type_)
+E               pydantic.error_wrappers.ValidationError: 1 validation error for Registration
+E               response
+E                 value is not a valid dict (type=type_error.dict)
+
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:137: ValidationError
+_________________________ test_register_capacity_fail __________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb0c0933df0>
+db = <sqlalchemy.orm.session.Session object at 0x7fb0c0933760>
+admin_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTY5NTcsInN1YiI6IjA0OTliMGVlLTZiNDgtNDI...zNmNkYmJlZSIsImp0aSI6ImE4M2FmZmI3LTk3Y2YtNDQzNy04NzI4LWIwYWUwYTVlMmRhMCJ9.LpySK69CtvwY_4a-bE_Pp1yxw6cjvChAd7zzZpUJTAY'}
+organizer_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTY5NTgsInN1YiI6ImEwMGVhYjZiLWY5NzMtNDY...xNWNkN2JlYyIsImp0aSI6IjVlMzMwZjBiLTIzZTktNDllYy1iNzA0LWU5Yjc3M2MwYjI1MSJ9.27iT-zsKnQhOI3-EgH5y8OWVciOlR2bzc5WWGVlr5tw'}
+organizer_user = <app.models.users.User object at 0x7fb0c0933160>
+
+    def test_register_capacity_fail(client: TestClient, db, admin_token_headers: dict, organizer_token_headers: dict, organizer_user):
+        # Create event with capacity 1
+        event = EventModel(
+            title="Full Event",
+            status=EventStatus.PUBLISHED.value,
+            organizer_id=organizer_user.id,
+            capacity=1
+        )
+        db.add(event)
+        db.commit()
+        db.refresh(event)
+    
+        # Register first user
+>       client.post(f"{settings.API_V1_STR}/events/{event.id}/register", headers=admin_token_headers)
+
+tests/api/v1/test_registrations.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:234: in app
+    response_data = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            response_content = _prepare_response_content(
+                response_content,
+                exclude_unset=exclude_unset,
+                exclude_defaults=exclude_defaults,
+                exclude_none=exclude_none,
+            )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, ErrorWrapper):
+                errors.append(errors_)
+            elif isinstance(errors_, list):
+                errors.extend(errors_)
+            if errors:
+>               raise ValidationError(errors, field.type_)
+E               pydantic.error_wrappers.ValidationError: 1 validation error for Registration
+E               response
+E                 value is not a valid dict (type=type_error.dict)
+
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:137: ValidationError
+___________________________ test_unregister_success ____________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb0c0933df0>
+db = <sqlalchemy.orm.session.Session object at 0x7fb0c0933760>
+admin_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTY5NTcsInN1YiI6IjA0OTliMGVlLTZiNDgtNDI...zNmNkYmJlZSIsImp0aSI6ImE4M2FmZmI3LTk3Y2YtNDQzNy04NzI4LWIwYWUwYTVlMmRhMCJ9.LpySK69CtvwY_4a-bE_Pp1yxw6cjvChAd7zzZpUJTAY'}
+organizer_user = <app.models.users.User object at 0x7fb0c0933160>
+
+    def test_unregister_success(client: TestClient, db, admin_token_headers: dict, organizer_user):
+        # Create and register
+        event = EventModel(
+            title="Unregister Test",
+            status=EventStatus.PUBLISHED.value,
+            organizer_id=organizer_user.id
+        )
+        db.add(event)
+        db.commit()
+        db.refresh(event)
+>       client.post(f"{settings.API_V1_STR}/events/{event.id}/register", headers=admin_token_headers)
+
+tests/api/v1/test_registrations.py:75: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:590: in post
+    return self.request('POST', url, data=data, json=json, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:234: in app
+    response_data = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            response_content = _prepare_response_content(
+                response_content,
+                exclude_unset=exclude_unset,
+                exclude_defaults=exclude_defaults,
+                exclude_none=exclude_none,
+            )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, ErrorWrapper):
+                errors.append(errors_)
+            elif isinstance(errors_, list):
+                errors.extend(errors_)
+            if errors:
+>               raise ValidationError(errors, field.type_)
+E               pydantic.error_wrappers.ValidationError: 1 validation error for Registration
+E               response
+E                 value is not a valid dict (type=type_error.dict)
+
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:137: ValidationError
+__________________________ test_update_user_as_admin ___________________________
+
+client = <starlette.testclient.TestClient object at 0x7fb0e1a1b250>
+db = <sqlalchemy.orm.session.Session object at 0x7fb0e1a1b6d0>
+admin_token_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzEyOTY5NTksInN1YiI6ImZhMmFhOGJjLWRjNDQtNDk...2ZmUzYmVmZiIsImp0aSI6ImJmYTRjMzYyLTE3MzQtNGE0Mi04NDQyLTUwMjhhOWJhNWZhYyJ9.h05d9sXxVU0eCN2kSbRNMUKrhjNENudxyuKAb-XuaNU'}
+
+    def test_update_user_as_admin(client: TestClient, db: Session, admin_token_headers: dict) -> None:
+        email = "tobeupdated@example.com"
+        user_data = {"email": email, "password": "password", "full_name": "To Be Updated"}
+        client.post(f"{settings.API_V1_STR}/users/register", json=user_data)
+    
+        user = db.query(User).filter(User.email == email).first()
+        user_id = str(user.id)
+    
+        update_data = {"full_name": "Updated Name", "role_names": ["organizer"]}
+>       response = client.put(
+            f"{settings.API_V1_STR}/users/{user_id}",
+            json=update_data,
+            headers=admin_token_headers,
+        )
+
+tests/api/v1/test_users.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:602: in put
+    return self.request('PUT', url, data=data, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:468: in request
+    return super().request(
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:542: in request
+    resp = self.send(prep, **send_kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/requests/sessions.py:655: in send
+    r = adapter.send(request, **kwargs)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:266: in send
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/testclient.py:263: in send
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:240: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:439: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.8/concurrent/futures/_base.py:388: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.8/site-packages/anyio/from_thread.py:187: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/applications.py:208: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:57: in __call__
+    task_group.cancel_scope.cancel()
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:574: in __aexit__
+    raise exceptions[0]
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/base.py:30: in coro
+    await self.app(scope, request.receive, send_stream.send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/middleware/cors.py:84: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:656: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:259: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/routing.py:61: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:226: in app
+    raw_response = await run_endpoint_function(
+/opt/anaconda3/lib/python3.8/site-packages/fastapi/routing.py:161: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+/opt/anaconda3/lib/python3.8/site-packages/starlette/concurrency.py:39: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+/opt/anaconda3/lib/python3.8/site-packages/anyio/to_thread.py:28: in run_sync
+    return await get_asynclib().run_sync_in_worker_thread(func, *args, cancellable=cancellable,
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:818: in run_sync_in_worker_thread
+    return await future
+/opt/anaconda3/lib/python3.8/site-packages/anyio/_backends/_asyncio.py:754: in run
+    result = context.run(func, *args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @router.put("/{user_id}", response_model=user_schema.User)
+    def update_user(
+        *,
+        db: Session = Depends(deps.get_db),
+        user_id: UUID,
+        user_in: user_schema.UserUpdate,
+        current_user: User = Depends(deps.get_current_active_superuser),
+    ) -> Any:
+        """
+        Update a user. (Admin only)
+        """
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="The user with this id does not exist in the system",
+            )
+    
+>       update_data = user_in.model_dump(exclude_unset=True)
+E       AttributeError: 'UserUpdate' object has no attribute 'model_dump'
+
+app/api/v1/endpoints/users.py:139: AttributeError
+=============================== warnings summary ===============================
+../../../../../../opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8
+  /opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_idempotency.py::test_idempotency_caching - pydantic.error_w...
+FAILED tests/test_idempotency.py::test_idempotency_no_header_normal_behavior
+FAILED tests/api/v1/test_events.py::test_create_event_organizer - pydantic.er...
+FAILED tests/api/v1/test_events.py::test_create_event_admin - pydantic.error_...
+FAILED tests/api/v1/test_events.py::test_read_events - pydantic.error_wrapper...
+FAILED tests/api/v1/test_events.py::test_update_event - pydantic.error_wrappe...
+FAILED tests/api/v1/test_events.py::test_delete_event - pydantic.error_wrappe...
+FAILED tests/api/v1/test_registrations.py::test_register_for_event_success - ...
+FAILED tests/api/v1/test_registrations.py::test_register_duplicate_fail - pyd...
+FAILED tests/api/v1/test_registrations.py::test_register_capacity_fail - pyda...
+FAILED tests/api/v1/test_registrations.py::test_unregister_success - pydantic...
+FAILED tests/api/v1/test_users.py::test_update_user_as_admin - AttributeError...
+=================== 12 failed, 14 passed, 1 warning in 9.84s ===================

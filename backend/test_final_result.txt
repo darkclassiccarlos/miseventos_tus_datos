@@ -1,0 +1,21 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.8.8, pytest-6.2.3, py-1.10.0, pluggy-0.13.1
+rootdir: /Users/carlosbautista/Desktop/Escritorio - MacBook Pro de Carlos/TusTados/backend
+plugins: anyio-3.4.0
+collected 26 items
+
+tests/test_env_debug.py .                                                [  3%]
+tests/test_idempotency.py ...                                            [ 15%]
+tests/test_main.py ..                                                    [ 23%]
+tests/api/v1/test_events.py ......                                       [ 46%]
+tests/api/v1/test_login.py ....                                          [ 61%]
+tests/api/v1/test_registrations.py ....                                  [ 76%]
+tests/api/v1/test_users.py ......                                        [100%]
+
+=============================== warnings summary ===============================
+../../../../../../opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8
+  /opt/anaconda3/lib/python3.8/site-packages/starlette/formparsers.py:8: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+======================== 26 passed, 1 warning in 7.62s =========================
