@@ -1,0 +1,12 @@
+/* Basic global styles */
+:root {
+  --background: #FDFFFC;
+  --foreground: #0D1B2A;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  margin: 0;
+  padding: 0;
+}
